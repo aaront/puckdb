@@ -4,7 +4,8 @@ from . import exceptions
 
 
 class BaseFilter(object):
-    pass
+    def split(self):
+        pass
 
 
 class TeamFilter(BaseFilter):
@@ -30,11 +31,20 @@ class GameFilter(BaseFilter):
         self.team = team
 
     @property
-    def season_range(self):
+    def from_season(self):
+        if not self.from_date:
+            return None
+        return self.from_date.year if self.from_date.month >= 9 else self.from_date.year - 1
+
+    @property
+    def to_season(self):
+        if not self.to_date:
+            return None
+        return self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
+
+    def by_season(self):
         seasons = []
-        from_season = self.from_date.year if self.from_date.month >= 9 else self.from_date.year - 1
-        to_season = self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
-        for i in range(to_season - from_season + 1):
-            season_start = from_season + i
-            seasons.append('{}{}'.format(season_start, season_start+1))
+        for i in range(self.to_season - self.from_season + 1):
+            season_start = self.from_season + i
+            seasons.append('{}{}'.format(season_start, season_start + 1))
         return seasons
