@@ -30,3 +30,10 @@ class TestGameFilter(unittest.TestCase):
         self.assertEqual(2, len(seasons))
         self.assertEqual('20142015', seasons[0])
         self.assertEqual('20152016', seasons[1])
+
+    def test_days(self):
+        from_date = datetime(2015, 10, 22)
+        to_date = datetime(2015, 10, 30)
+        game_filter = filters.GameFilter(from_date=from_date, to_date=to_date)
+        days = game_filter.days
+        self.assertEqual(9, len(days))

@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil import rrule
 
 from . import exceptions
 
@@ -41,6 +42,12 @@ class GameFilter(BaseFilter):
         if not self.to_date:
             return None
         return self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
+
+    @property
+    def days(self):
+        return list(rrule.rrule(rrule.DAILY,
+                                dtstart=self.from_date,
+                                until=self.to_date))
 
     def by_season(self):
         seasons = []

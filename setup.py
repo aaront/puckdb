@@ -20,7 +20,8 @@ setup(
         'cchardet',
         'aiohttp',
         'aiopg',
-        'sqlalchemy'
+        'sqlalchemy',
+        'python-dateutil'
     ],
     test_suite="tests",
     include_package_data=True,
