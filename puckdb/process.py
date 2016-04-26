@@ -24,4 +24,4 @@ class NHLGameProcessor(BaseProcessor):
         pass
 
     def get_urls(self, filter_by: filters.GameFilter):
-        return [self.url.format(from_date=day, to_date=day) for day in filter_by.days]
+        return [self.url.format(from_date=day, to_date=day) for day in filter_by.intervals]

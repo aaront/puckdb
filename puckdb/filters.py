@@ -44,10 +44,13 @@ class GameFilter(BaseFilter):
         return self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
 
     @property
-    def days(self):
-        return list(rrule.rrule(rrule.DAILY,
-                                dtstart=self.from_date,
-                                until=self.to_date))
+    def intervals(self):
+        days = list(rrule.rrule(rrule.DAILY, dtstart=self.from_date, until=self.to_date))
+        if len(days) >= 300:
+            return list(rrule.rrule(rrule.MONTHLY, dtstart=self.from_date, until=self.to_date))
+        if len(days) >= 60:
+            return list(rrule.rrule(rrule.WEEKLY, dtstart=self.from_date, until=self.to_date))
+        return days
 
     def by_season(self):
         seasons = []
