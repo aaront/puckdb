@@ -1,5 +1,7 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
+from typing import List
+
 from dateutil import rrule
 
 from . import exceptions
@@ -35,19 +37,19 @@ class GameFilter(BaseFilter):
         self.team = team
 
     @property
-    def from_season(self):
+    def from_season(self) -> int:
         if not self.from_date:
             return None
         return self.from_date.year if self.from_date.month >= 9 else self.from_date.year - 1
 
     @property
-    def to_season(self):
+    def to_season(self) -> int:
         if not self.to_date:
             return None
         return self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
 
     @property
-    def intervals(self):
+    def intervals(self) -> List[Interval]:
         ints = []
         split_dates = list(rrule.rrule(rrule.DAILY, dtstart=self.from_date, until=self.to_date))
         if len(split_dates) >= 300:
@@ -62,7 +64,7 @@ class GameFilter(BaseFilter):
             ints.append(Interval(start=start, end=end))
         return ints
 
-    def by_season(self):
+    def by_season(self) -> List[str]:
         seasons = []
         for i in range(self.to_season - self.from_season + 1):
             season_start = self.from_season + i
