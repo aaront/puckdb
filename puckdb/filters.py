@@ -1,7 +1,10 @@
-from datetime import datetime
+from collections import namedtuple
+from datetime import datetime, timedelta
 from dateutil import rrule
 
 from . import exceptions
+
+Interval = namedtuple('Interval', ['start', 'end'])
 
 
 class BaseFilter(object):
@@ -45,12 +48,19 @@ class GameFilter(BaseFilter):
 
     @property
     def intervals(self):
-        days = list(rrule.rrule(rrule.DAILY, dtstart=self.from_date, until=self.to_date))
-        if len(days) >= 300:
-            return list(rrule.rrule(rrule.MONTHLY, dtstart=self.from_date, until=self.to_date))
-        if len(days) >= 60:
-            return list(rrule.rrule(rrule.WEEKLY, dtstart=self.from_date, until=self.to_date))
-        return days
+        ints = []
+        split_dates = list(rrule.rrule(rrule.DAILY, dtstart=self.from_date, until=self.to_date))
+        if len(split_dates) >= 300:
+            split_dates = list(rrule.rrule(rrule.MONTHLY, dtstart=self.from_date, until=self.to_date))
+        elif len(split_dates) >= 60:
+            split_dates = list(rrule.rrule(rrule.WEEKLY, dtstart=self.from_date, until=self.to_date))
+        for i, start in enumerate(split_dates):
+            if len(split_dates) > i + 1:
+                end = split_dates[i + 1] - timedelta(days=1)
+            else:
+                end = start
+            ints.append(Interval(start=start, end=end))
+        return ints
 
     def by_season(self):
         seasons = []

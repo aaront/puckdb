@@ -37,6 +37,8 @@ class TestGameFilter(unittest.TestCase):
         game_filter = filters.GameFilter(from_date=from_date, to_date=to_date)
         days = game_filter.intervals
         self.assertEqual(9, len(days))
+        self.assertEqual(datetime(2015, 10, 22), days[0].start)
+        self.assertEqual(datetime(2015, 10, 22), days[0].end)
 
     def test_weeks(self):
         from_date = datetime(2015, 10, 22)
@@ -44,6 +46,8 @@ class TestGameFilter(unittest.TestCase):
         game_filter = filters.GameFilter(from_date=from_date, to_date=to_date)
         weeks = game_filter.intervals
         self.assertEqual(18, len(weeks))
+        self.assertEqual(datetime(2015, 10, 22), weeks[0].start)
+        self.assertEqual(datetime(2015, 10, 28), weeks[0].end)
 
     def test_months(self):
         from_date = datetime(2013, 10, 22)
@@ -51,3 +55,5 @@ class TestGameFilter(unittest.TestCase):
         game_filter = filters.GameFilter(from_date=from_date, to_date=to_date)
         months = game_filter.intervals
         self.assertEqual(29, len(months))
+        self.assertEqual(datetime(2013, 10, 22), months[0].start)
+        self.assertEqual(datetime(2013, 11, 21), months[0].end)
