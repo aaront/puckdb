@@ -21,7 +21,8 @@ setup(
         'aiohttp',
         'aiopg',
         'sqlalchemy',
-        'python-dateutil', 'ujson'
+        'python-dateutil',
+        'ujson'
     ],
     test_suite="tests",
     include_package_data=True,
