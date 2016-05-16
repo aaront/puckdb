@@ -41,10 +41,9 @@ class BaseScraper(object):
         pass
 
 
-class NHLGameScraper(BaseScraper):
+class NHLScheduleScraper(BaseScraper):
     url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate={from_date}&endDate={to_date}' \
-          '&expand=schedule.teams,schedule.linescore,schedule.broadcasts.all,schedule.ticket,schedule.game.content' \
-          '.media.epg&leaderCategories=&site=en_nhl&teamId='
+          '&expand=schedule.teams&site=en_nhl&teamId='
 
     def __init__(self, filter_by: filters.GameFilter, concurrency: int = 5):
         super().__init__(filter_by, concurrency)
@@ -61,6 +60,20 @@ class NHLGameScraper(BaseScraper):
         return [
             self.url.format(from_date=interval.start.strftime('%Y-%m-%d'), to_date=interval.end.strftime('%Y-%m-%d'))
             for interval in self.filter_by.intervals]
+
+
+class NHLGameScraper(BaseScraper):
+    url = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
+
+    def __init__(self, filter_by: filters.GameFilter, concurrency: int = 3):
+        super().__init__(filter_by, concurrency)
+
+    async def process(self, data: dict) -> List[dict]:
+        return data
+
+    @property
+    def urls(self) -> List[str]:
+        return [self.url.format(game_id=gid) for gid in self.filter_by.game_ids]
 
 
 def fetch(scraper: BaseScraper):

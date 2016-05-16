@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.schema import CreateTable
 
-from .constants import GameState
+from .constants import GameState, GameEvent
 from .async.db import *
 
 metadata = sa.MetaData()
@@ -30,4 +30,10 @@ game_tbl = sa.Table('game', metadata,
     sa.Column('start', sa.DateTime, index=True),
     sa.Column('duration', sa.Time),
     sa.Column('periods', sa.SmallInteger)
+)
+
+event_tbl = sa.Table('event', metadata,
+    sa.Column('game_id', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False),
+    sa.Column('type', sa.Enum(GameEvent), nullable=False),
+    sa.Column('')
 )

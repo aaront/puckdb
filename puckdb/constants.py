@@ -8,4 +8,6 @@ class GameState(enum.Enum):
 
 
 class GameEvent(enum.Enum):
-    pass
+    shot = 0
+    block = 1
+    miss = 2
