@@ -3,4 +3,4 @@ class FilterException(Exception):
         self.message = message
 
     def __str__(self):
-        return 'Invalid filter{message}'.format(': ' + self.message if self.message else '')
+        return 'Invalid filter{message}'.format(message=': ' + self.message if self.message else '')

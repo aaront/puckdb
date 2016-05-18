@@ -1,0 +1,15 @@
+language: python
+python:
+  - "3.5"
+  - "nightly"
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.pyenv
+
+script: nosetests
