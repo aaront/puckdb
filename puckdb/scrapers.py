@@ -30,14 +30,14 @@ class BaseScraper(object):
     async def process(self, data: dict) -> List[dict]:
         return [data]
 
-    async def run(self, session: aiohttp.ClientSession, url: str) -> List[dict]:
+    async def _fetch(self, session: aiohttp.ClientSession, url: str) -> List[dict]:
         async with self.sem:
             async with session.get(url, headers=headers) as response:
                 assert response.status == 200
                 return await self.process(await response.json(loads=ujson.loads))
 
-    @abc.abstractproperty
-    def urls(self) -> List[str]:
+    @abc.abstractmethod
+    def get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         pass
 
 
@@ -52,14 +52,14 @@ class NHLScheduleScraper(BaseScraper):
         games = []
         if 'dates' in data:
             for daily in data['dates']:
-                games = daily['games'] or []
+                games.extend(daily['games'])
         return games
 
-    @property
-    def urls(self) -> List[str]:
-        return [
+    def get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
+        urls = [
             self.url.format(from_date=interval.start.strftime('%Y-%m-%d'), to_date=interval.end.strftime('%Y-%m-%d'))
             for interval in self.filter_by.intervals]
+        return [asyncio.ensure_future(self._fetch(session, url)) for url in urls]
 
 
 class NHLGameScraper(BaseScraper):
@@ -69,17 +69,24 @@ class NHLGameScraper(BaseScraper):
         super().__init__(filter_by, concurrency)
 
     async def process(self, data: dict) -> List[dict]:
-        return data
+        return [data]
 
-    @property
-    def urls(self) -> List[str]:
-        return [self.url.format(game_id=gid) for gid in self.filter_by.game_ids]
+    def get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
+        urls = [self.url.format(game_id=gid) for gid in self.filter_by.game_ids]
+        return [asyncio.ensure_future(self._fetch(session, url)) for url in urls]
 
 
-def fetch(scraper: BaseScraper):
+def _fetch_all_tasks(tasks: List[asyncio.Future], loop: asyncio.AbstractEventLoop) -> List[dict]:
+    return list(itertools.chain(*loop.run_until_complete(asyncio.gather(*tasks))))
+
+
+def fetch_games(filter_by: filters.GameFilter) -> List[object]:
     loop = asyncio.get_event_loop()
+    schedule_scraper = NHLScheduleScraper(filter_by)
     with aiohttp.ClientSession(loop=loop) as session:
-        tasks = [asyncio.ensure_future(scraper.run(session, url)) for url in scraper.urls]
-        games = list(itertools.chain(*loop.run_until_complete(asyncio.gather(*tasks))))
+        schedule_games = _fetch_all_tasks(schedule_scraper.get_tasks(session), loop)
+        game_filter = filters.GameFilter(game_ids=[g['gamePk'] for g in schedule_games])
+        game_scraper = NHLGameScraper(game_filter)
+        games = _fetch_all_tasks(game_scraper.get_tasks(session), loop)
     loop.close()
     return games

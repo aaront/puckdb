@@ -20,21 +20,21 @@ class TeamFilter(BaseFilter):
 
 
 class GameFilter(BaseFilter):
-    def __init__(self, from_date=None, to_date=None, team=None):
+    def __init__(self, from_date=None, to_date=None, team=None, game_ids=None):
         """
 
         :type from_date: datetime
         :type to_date: datetime
         :type team: TeamFilter
+        :type game_ids: List[str]
         """
-        if from_date is None:
-            raise exceptions.FilterException('from_date must be provided')
         to_date = to_date or datetime.utcnow()
-        if to_date < from_date:
+        if from_date and to_date < from_date:
             raise exceptions.FilterException('to_date must be after from_date')
         self.from_date = from_date
         self.to_date = to_date
         self.team = team
+        self.game_ids = game_ids
 
     @property
     def from_season(self) -> int:
