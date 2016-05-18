@@ -7,6 +7,10 @@ branches:
   only:
     - master
 
+install:
+  - travis_retry pip install nose
+  - travis_retry pip install .
+
 cache:
   directories:
     - $HOME/.cache/pip
