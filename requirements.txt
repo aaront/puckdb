@@ -1,0 +1,7 @@
+click
+cchardet
+aiohttp
+aiopg
+sqlalchemy
+python-dateutil
+ujson

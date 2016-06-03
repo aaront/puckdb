@@ -1,8 +1,7 @@
 import sqlalchemy as sa
-from sqlalchemy.schema import CreateTable
 
 from .constants import GameState, GameEvent
-from .async.db import *
+from .conf import get_db
 
 metadata = sa.MetaData()
 
@@ -34,6 +33,11 @@ game_tbl = sa.Table('game', metadata,
 
 event_tbl = sa.Table('event', metadata,
     sa.Column('game_id', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False),
-    sa.Column('type', sa.Enum(GameEvent), nullable=False),
-    sa.Column('')
+    sa.Column('type', sa.Enum(GameEvent), nullable=False)
 )
+
+
+def create():
+    engine = sa.create_engine(get_db())
+    metadata.drop_all(engine)
+    metadata.create_all(engine)

@@ -31,11 +31,11 @@ def _write(dsn=''):
         conf.write(f)
 
 
-def init():
+def init(connect_path):
     config_file = _get_config_file_path()
     if not os.path.exists(os.path.dirname(config_file)):
         os.makedirs(os.path.dirname(config_file))
-        _write()
+        _write(dsn=connect_path)
 
 
 def get_db() -> str:

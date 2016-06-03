@@ -15,15 +15,6 @@ setup(
     url='https://github.com/aaront/puckdb',
     description='An async-first hockey data extractor and API',
     long_description=open('README.rst').read(),
-    install_requires=[
-        'click',
-        'cchardet',
-        'aiohttp',
-        'aiopg',
-        'sqlalchemy',
-        'python-dateutil',
-        'ujson'
-    ],
     test_suite="tests",
     include_package_data=True,
     packages=find_packages(),
