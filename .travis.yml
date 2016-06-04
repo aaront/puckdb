@@ -9,7 +9,7 @@ branches:
 
 install:
   - travis_retry pip install nose
-  - travis_retry pip install .
+  - travis_retry pip install -r requirements.txt
 
 cache:
   directories:
