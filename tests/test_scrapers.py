@@ -1,12 +1,27 @@
+import asyncio
 import unittest
 from datetime import datetime
 
 from puckdb import filters, scrapers
 
 
-class TestScheduleScraper(unittest.TestCase):
+class TestAsyncScraper(unittest.TestCase):
+    def setUp(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(None)
+
+
+class TestScheduleScraper(TestAsyncScraper):
     def test_one_day(self):
         day = datetime(2016, 4, 30)
         game_filter = filters.GameFilter(from_date=day, to_date=day)
-        games = scrapers.fetch_games(game_filter)
+        schedule_games = scrapers.NHLScheduleScraper(game_filter, loop=self.loop).get()
+        game_filter = filters.GameFilter(game_ids=[g['gamePk'] for g in schedule_games])
+        games = scrapers.NHLGameScraper(game_filter, loop=self.loop).get()
         self.assertEqual(2, len(games))
+
+
+class TestTeamScraper(TestAsyncScraper):
+    def test_get_teams(self):
+        teams = scrapers.NHLTeamScraper(loop=self.loop).get()
+        self.assertEqual(53, len(teams))
