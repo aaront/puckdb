@@ -15,8 +15,6 @@ class TestScheduleScraper(TestAsyncScraper):
     def test_one_day(self):
         day = datetime(2016, 4, 30)
         game_filter = filters.GameFilter(from_date=day, to_date=day)
-        schedule_games = scrapers.NHLScheduleScraper(game_filter, loop=self.loop).get()
-        game_filter = filters.GameFilter(game_ids=[g['gamePk'] for g in schedule_games])
         games = scrapers.NHLGameScraper(game_filter, loop=self.loop).get()
         self.assertEqual(2, len(games))
 

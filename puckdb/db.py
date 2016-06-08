@@ -14,7 +14,8 @@ team_tbl = sa.Table('team', metadata,
     sa.Column('id', sa.SmallInteger, primary_key=True),
     sa.Column('league', sa.SmallInteger, sa.ForeignKey('league.id'), nullable=False),
     sa.Column('name', sa.String),
-    sa.Column('full_name', sa.String),
+    sa.Column('short_name', sa.String),
+    sa.Column('abbreviation', sa.String),
     sa.Column('city', sa.String)
 )
 
@@ -41,3 +42,7 @@ def create():
     engine = sa.create_engine(get_db())
     metadata.drop_all(engine)
     metadata.create_all(engine)
+    engine.execute(league_tbl.insert().values(
+        id=0,
+        name='NHL'
+    ))

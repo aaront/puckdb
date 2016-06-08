@@ -5,6 +5,7 @@ import ujson
 from typing import List
 
 import aiohttp
+from aiopg import sa
 
 try:
     import uvloop
@@ -13,7 +14,7 @@ try:
 except ImportError:
     pass
 
-from . import filters
+from . import filters, conf, db
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'}
@@ -30,14 +31,15 @@ class BaseScraper(object):
         self.sem = asyncio.Semaphore(concurrency, loop=self.loop)
 
     @abc.abstractmethod
-    async def _process(self, data: dict) -> List[dict]:
+    async def _process(self, data: dict, engine: sa.engine.Engine=None) -> List[dict]:
         return [data]
 
     async def _fetch(self, session: aiohttp.ClientSession, url: str) -> List[dict]:
         async with self.sem:
             async with session.get(url, headers=headers) as response:
                 assert response.status == 200
-                return await self._process(await response.json(loads=ujson.loads))
+                async with sa.create_engine(dsn=conf.get_db(), loop=self.loop) as engine:
+                    return await self._process(await response.json(loads=ujson.loads), engine)
 
     @abc.abstractmethod
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
@@ -58,8 +60,17 @@ class NHLTeamScraper(BaseScraper):
     def __init__(self, filter_by: filters.BaseFilter=None, concurrency: int = 5, loop: asyncio.AbstractEventLoop=None):
         super().__init__(filter_by, concurrency, loop)
 
-    async def _process(self, data: dict) -> List[dict]:
+    async def _process(self, data: dict, engine: sa.engine.Engine=None) -> List[dict]:
         team = data['teams'][0]
+        # async with engine.acquire() as conn:
+        #     await conn.execute(db.team_tbl.insert().values(
+        #         id=team['id'],
+        #         league=0,
+        #         name=team['name'],
+        #         short_name=team['shortName'],
+        #         abbreviation=team['abbreviation'],
+        #         city=team['locationName']
+        #     ))
         return [team]
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
@@ -75,7 +86,7 @@ class NHLScheduleScraper(BaseScraper):
     def __init__(self, filter_by: filters.GameFilter, concurrency: int = 5, loop: asyncio.AbstractEventLoop=None):
         super().__init__(filter_by, concurrency, loop)
 
-    async def _process(self, data: dict) -> List[dict]:
+    async def _process(self, data: dict, engine: sa.engine.Engine=None) -> List[dict]:
         games = []
         if 'dates' in data:
             for daily in data['dates']:
@@ -95,9 +106,10 @@ class NHLGameScraper(BaseScraper):
     def __init__(self, filter_by: filters.GameFilter, concurrency: int = 3, loop: asyncio.AbstractEventLoop=None):
         super().__init__(filter_by, concurrency, loop)
 
-    async def _process(self, data: dict) -> List[dict]:
+    async def _process(self, data: dict, engine: sa.engine.Engine=None) -> List[dict]:
         return [data]
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
-        urls = [self.url.format(game_id=gid) for gid in self.filter_by.game_ids]
+        schedule_games = NHLScheduleScraper(self.filter_by, loop=self.loop).get()
+        urls = [self.url.format(game_id=g['gamePk']) for g in schedule_games]
         return [asyncio.ensure_future(self._fetch(session, url), loop=self.loop) for url in urls]
