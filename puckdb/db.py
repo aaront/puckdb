@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 
-from .constants import GameState, GameEvent
 from .conf import get_db
+from .constants import GameState, GameEvent
 
 metadata = sa.MetaData()
 

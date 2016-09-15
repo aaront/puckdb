@@ -18,6 +18,7 @@ def init(connect=None):
 def main():
     pass
 
+
 main.add_command(init)
 
 if __name__ == '__main__':
