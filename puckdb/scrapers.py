@@ -90,7 +90,11 @@ class NHLScheduleScraper(BaseScraper):
         super().__init__(filter_by, concurrency, loop)
 
     async def _process(self, data: dict, engine: sa.engine.Engine = None) -> List[dict]:
-        return [d['games'] for d in data['dates'] if 'dates' in data]
+        games = []
+        if 'dates' in data:
+            for daily in data['dates']:
+                games.extend(daily['games'])
+        return games
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
