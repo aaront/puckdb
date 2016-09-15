@@ -7,6 +7,12 @@ branches:
   only:
     - master
 
+before_script:
+  - psql -c 'create database puckdb_test;' -U postgres
+
+addons:
+  postgresql: '9.4'
+
 install:
   - travis_retry pip install nose
   - travis_retry pip install -r requirements.txt
