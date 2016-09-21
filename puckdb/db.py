@@ -1,3 +1,5 @@
+import asyncio
+
 import sqlalchemy as sa
 
 from .conf import get_db
@@ -5,14 +7,8 @@ from .constants import GameState, GameEvent
 
 metadata = sa.MetaData()
 
-league_tbl = sa.Table('league', metadata,
-    sa.Column('id', sa.SmallInteger, primary_key=True),
-    sa.Column('name', sa.String(255))
-)
-
 team_tbl = sa.Table('team', metadata,
     sa.Column('id', sa.SmallInteger, primary_key=True),
-    sa.Column('league', sa.SmallInteger, sa.ForeignKey('league.id'), nullable=False),
     sa.Column('name', sa.String),
     sa.Column('short_name', sa.String),
     sa.Column('abbreviation', sa.String),
@@ -22,7 +18,7 @@ team_tbl = sa.Table('team', metadata,
 game_tbl = sa.Table('game', metadata,
     sa.Column('id', sa.BigInteger, primary_key=True),
     sa.Column('season', sa.SmallInteger),
-    sa.Column('status', sa.Enum(GameState)),
+    sa.Column('status', sa.Enum(GameState, name='game_state')),
     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('home', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('away_score', sa.SmallInteger),
@@ -34,15 +30,21 @@ game_tbl = sa.Table('game', metadata,
 
 event_tbl = sa.Table('event', metadata,
     sa.Column('game_id', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False),
-    sa.Column('type', sa.Enum(GameEvent), nullable=False)
+    sa.Column('type', sa.Enum(GameEvent, name='game_event'), nullable=False)
 )
 
+async def execute(sql: str, loop: asyncio.AbstractEventLoop):
+    async with sa.create_engine(dsn=get_db(), loop=loop) as engine:
+        async with engine.acquire() as conn:
+            await conn.execute(sql)
 
-def create():
-    engine = sa.create_engine(get_db())
+
+def create(dsn=None):
+    engine = sa.create_engine(dsn or get_db())
     metadata.drop_all(engine)
     metadata.create_all(engine)
-    engine.execute(league_tbl.insert().values(
-        id=0,
-        name='NHL'
-    ))
+
+
+def drop(dsn=None):
+    engine = sa.create_engine(dsn or get_db())
+    metadata.drop_all(engine)
