@@ -10,6 +10,9 @@ class TestAsyncScraper(unittest.TestCase):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(None)
 
+    def tearDown(self):
+        pass
+
 
 class TestScheduleScraper(TestAsyncScraper):
     def test_one_day(self):

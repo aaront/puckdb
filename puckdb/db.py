@@ -1,11 +1,15 @@
 import asyncio
+import os
+import contextlib
 
 import sqlalchemy as sa
+from aiopg import sa as async_sa
 
-from .conf import get_db
 from .constants import GameState, GameEvent
 
 metadata = sa.MetaData()
+
+connect_str = os.getenv('PUCKDB_DATABASE', None)
 
 team_tbl = sa.Table('team', metadata,
     sa.Column('id', sa.SmallInteger, primary_key=True),
@@ -33,18 +37,20 @@ event_tbl = sa.Table('event', metadata,
     sa.Column('type', sa.Enum(GameEvent, name='game_event'), nullable=False)
 )
 
-async def execute(sql: str, loop: asyncio.AbstractEventLoop):
-    async with sa.create_engine(dsn=get_db(), loop=loop) as engine:
+
+@contextlib.contextmanager
+async def create_connection(loop: asyncio.AbstractEventLoop, dsn: str = None):
+    async with async_sa.create_engine(dsn=dsn or connect_str, loop=loop) as engine:
         async with engine.acquire() as conn:
-            await conn.execute(sql)
+            await conn
 
 
 def create(dsn=None):
-    engine = sa.create_engine(dsn or get_db())
+    engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)
     metadata.create_all(engine)
 
 
 def drop(dsn=None):
-    engine = sa.create_engine(dsn or get_db())
+    engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)

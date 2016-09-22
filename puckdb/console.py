@@ -1,16 +1,15 @@
 import click
 
-from . import conf, db
+from . import db
 
 
 @click.command(help='Initialize the database')
 @click.argument('connect', nargs=1, required=False)
 def init(connect=None):
-    if not conf.get_db():
+    if not db.connect_str:
         if not connect:
             raise Exception('Must provide a connection string')
-        conf.init(connect)
-    db.create()
+    db.create(connect)
 
 
 @click.group()

@@ -5,7 +5,6 @@ import ujson
 from typing import List
 
 import aiohttp
-from aiopg import sa
 
 try:
     import uvloop
@@ -14,7 +13,7 @@ try:
 except ImportError:
     pass
 
-from . import filters, conf, db
+from . import filters
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'}
@@ -31,7 +30,6 @@ class BaseScraper(object):
         self.loop = loop
         self.sem = asyncio.Semaphore(concurrency, loop=self.loop)
 
-    @abc.abstractmethod
     async def _process(self, data: dict) -> List[dict]:
         return [data]
 
@@ -64,14 +62,13 @@ class NHLTeamScraper(BaseScraper):
 
     async def _process(self, data: dict) -> List[dict]:
         team = data['teams'][0]
-        # await db.execute(db.team_tbl.insert().values(
-        #     id=team['id'],
-        #     name=team['name'],
-        #     short_name=team['shortName'],
-        #     abbreviation=team['abbreviation'],
-        #     city=team['locationName']
-        # ), self.loop)
-        return [team]
+        return [dict(
+            id=team['id'],
+            name=team['name'],
+            short_name=team.get('shortName', None),
+            abbreviation=team['abbreviation'],
+            city=team['locationName']
+        )]
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
@@ -105,9 +102,6 @@ class NHLGameScraper(BaseScraper):
 
     def __init__(self, filter_by: filters.GameFilter, concurrency: int = 3, loop: asyncio.AbstractEventLoop = None):
         super().__init__(filter_by, concurrency, loop)
-
-    async def _process(self, data: dict) -> List[dict]:
-        return [data]
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         schedule_games = NHLScheduleScraper(self.filter_by, loop=self.loop).get()
