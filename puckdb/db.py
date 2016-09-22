@@ -1,6 +1,6 @@
 import asyncio
-import os
 import contextlib
+import os
 
 import sqlalchemy as sa
 from aiopg import sa as async_sa
