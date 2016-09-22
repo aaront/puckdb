@@ -2,6 +2,6 @@ click
 cchardet
 aiohttp
 aiopg
-sqlalchemy>=1.1.0
+sqlalchemy==1.1.0b3
 python-dateutil
 ujson
