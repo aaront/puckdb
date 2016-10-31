@@ -1,7 +1,6 @@
 language: python
 python:
   - "3.5"
-  - "nightly"
 
 branches:
   only:
@@ -14,7 +13,14 @@ addons:
   postgresql: '9.4'
 
 install:
-  - travis_retry pip install nose
+  # Install conda
+  - sudo pip install conda
+  # install deps
+  - sudo conda init
+  - sudo conda update conda --yes
+  - deps='pip numpy pandas requests nose sphinx'
+  - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
+  - export PATH=$HOME/py/bin:$PATH
   - travis_retry pip install -r requirements.txt
 
 cache:
