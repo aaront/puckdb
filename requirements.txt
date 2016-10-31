@@ -5,3 +5,4 @@ aiopg
 sqlalchemy==1.1.0b3
 python-dateutil
 ujson
+pandas

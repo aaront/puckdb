@@ -18,11 +18,11 @@ class TestScheduleScraper(TestAsyncScraper):
     def test_one_day(self):
         day = datetime(2016, 4, 30)
         game_filter = filters.GameFilter(from_date=day, to_date=day)
-        games = scrapers.NHLGameScraper(game_filter, loop=self.loop).get()
+        games = scrapers.GameScraper(game_filter, loop=self.loop).get()
         self.assertEqual(2, len(games))
 
 
 class TestTeamScraper(TestAsyncScraper):
     def test_get_teams(self):
-        teams = scrapers.NHLTeamScraper(loop=self.loop).get()
+        teams = scrapers.TeamScraper(loop=self.loop).get()
         self.assertEqual(53, len(teams))
