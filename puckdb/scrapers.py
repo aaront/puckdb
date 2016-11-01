@@ -16,7 +16,8 @@ except ImportError:
 from . import filters
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'}
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/50.0.2661.86 Safari/537.36'}
 
 
 class BaseScraper(object):
@@ -24,11 +25,22 @@ class BaseScraper(object):
 
     @abc.abstractmethod
     def __init__(self, filter_by: filters.BaseFilter = None, concurrency: int = 5,
-                 loop: asyncio.AbstractEventLoop = None):
+                 loop: asyncio.AbstractEventLoop = None, save: bool = True):
         self.filter_by = filter_by
         self.concurrency = concurrency
         self.loop = loop or asyncio.get_event_loop()
         self.sem = asyncio.Semaphore(concurrency, loop=self.loop)
+        self.save = save
+
+    async def _process_and_save(self, data : dict) -> List[dict]:
+        data = await self._process(data)
+        if self.save:
+            await self._save(data)
+        return data
+
+    @abc.abstractmethod
+    async def _save(self, data: List[dict]):
+        pass
 
     async def _process(self, data: dict) -> List[dict]:
         return [data]
@@ -37,15 +49,15 @@ class BaseScraper(object):
         async with self.sem:
             async with session.get(url, headers=headers) as response:
                 assert response.status == 200
-                return await self._process(await response.json(loads=ujson.loads))
+                return await self._process_and_save(await response.json(loads=ujson.loads))
 
     @abc.abstractmethod
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         pass
 
-    def fetch(self):
+    def save(self):
         with aiohttp.ClientSession(loop=self.loop) as session:
-            self.loop.run_until_complete(self._get_tasks(session))
+            self.loop.run_until_complete(self._get_tasks(session, True))
 
     def get(self):
         with aiohttp.ClientSession(loop=self.loop) as session:
@@ -57,18 +69,14 @@ class TeamScraper(BaseScraper):
     url = 'https://statsapi.web.nhl.com/api/v1/teams/{team_id}'
 
     def __init__(self, filter_by: filters.BaseFilter = None, concurrency: int = 5,
-                 loop: asyncio.AbstractEventLoop = None):
-        super().__init__(filter_by, concurrency, loop)
+                 loop: asyncio.AbstractEventLoop = None, save: bool = True):
+        super().__init__(filter_by, concurrency, loop, save)
 
     async def _process(self, data: dict) -> List[dict]:
-        team = data['teams'][0]
-        return [dict(
-            id=team['id'],
-            name=team['name'],
-            short_name=team.get('shortName', None),
-            abbreviation=team['abbreviation'],
-            city=team['locationName']
-        )]
+        return [data['teams'][0]]
+
+    async def _save(self, data: List[dict]):
+        pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
@@ -80,8 +88,9 @@ class ScheduleScraper(BaseScraper):
     url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate={from_date}&endDate={to_date}' \
           '&expand=schedule.teams&site=en_nhl&teamId='
 
-    def __init__(self, filter_by: filters.GameFilter, concurrency: int = 5, loop: asyncio.AbstractEventLoop = None):
-        super().__init__(filter_by, concurrency, loop)
+    def __init__(self, filter_by: filters.GameFilter, concurrency: int = 5, loop: asyncio.AbstractEventLoop = None,
+                 save: bool = True):
+        super().__init__(filter_by, concurrency, loop, save)
 
     async def _process(self, data: dict) -> List[dict]:
         games = []
@@ -89,6 +98,9 @@ class ScheduleScraper(BaseScraper):
             for daily in data['dates']:
                 games.extend(daily['games'])
         return games
+
+    async def _save(self, data: List[dict]):
+        pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
@@ -100,8 +112,12 @@ class ScheduleScraper(BaseScraper):
 class GameScraper(BaseScraper):
     url = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
 
-    def __init__(self, filter_by: filters.GameFilter, concurrency: int = 3, loop: asyncio.AbstractEventLoop = None):
-        super().__init__(filter_by, concurrency, loop)
+    def __init__(self, filter_by: filters.GameFilter, concurrency: int = 3, loop: asyncio.AbstractEventLoop = None,
+                 save: bool = True):
+        super().__init__(filter_by, concurrency, loop, save)
+
+    async def _save(self, data: List[dict]):
+        pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         schedule_games = ScheduleScraper(self.filter_by, loop=self.loop).get()

@@ -31,8 +31,14 @@ game_tbl = sa.Table('game', metadata,
 )
 
 event_tbl = sa.Table('event', metadata,
-    sa.Column('game_id', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False),
-    sa.Column('type', sa.Enum(EventType, name='game_event'), nullable=False)
+    sa.Column('game', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False, primary_key=True),
+    sa.Column('id', sa.Integer, nullable=False, primary_key=True),
+    sa.Column('team', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
+    sa.Column('type', sa.Enum(EventType, name='game_event'), nullable=False),
+    sa.Column('time', sa.Time, nullable=False),
+    sa.Column('secondary_type', sa.String),
+    sa.Column('strength', sa.String),
+    sa.Column('period', sa.SmallInteger, nullable=False)
 )
 
 
