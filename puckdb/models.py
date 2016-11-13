@@ -32,7 +32,7 @@ class ShotType(enum.Enum):
 
 
 class Event(object):
-    def __init__(self, game_id: int, team_id: id, type: EventType, time: time, x: float, y: float):
+    def __init__(self, game_id: int, team_id: int, type: EventType, time: time, x: float, y: float):
         self.game_id = game_id
         self.type = type
         self.time = time
@@ -49,7 +49,7 @@ class Event(object):
 
 
 class Shot(Event):
-    def __init__(self, game_id: int, team_id: id, type: EventType, time: time, x: float, y: float, shot_type: ShotType):
+    def __init__(self, game_id: int, team_id: int, type: EventType, time: time, x: float, y: float, shot_type: ShotType):
         super().__init__(game_id, team_id, type, time, x, y)
         self.shot_type = shot_type
 
