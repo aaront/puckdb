@@ -38,7 +38,9 @@ class BaseScraper(object):
     async def _process_and_save(self, data: dict) -> List[dict]:
         data = await self._process(data)
         if self.save:
-            await db.execute(self._insert_sql(data), loop=self.loop)
+            insert_sql = self._insert_sql(data)
+            if insert_sql:
+                await db.execute(insert_sql, loop=self.loop)
         return data
 
     async def _process(self, data: dict) -> List[dict]:
