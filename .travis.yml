@@ -13,7 +13,7 @@ env:
     - POSTGRES_DEB="postgresql-9.5_9.5.5-1.pgdg12.4+1_amd64.deb"
 
 before_script:
-  - psql -c 'create database puckdb_test;' -U postgres -p 54321
+  - psql -U postgres -p 54321 -c 'create database puckdb_test;'
 
 before_install:
   - |
@@ -37,6 +37,7 @@ before_install:
     sed -i -e 's/#synchronous_commit.*/synchronous_commit = off/' /tmp/postgres/data/postgresql.conf
     sed -i -e 's/#full_page_writes.*/full_page_writes = off/' /tmp/postgres/data/postgresql.conf
     /tmp/postgres/usr/lib/postgresql/9.5/bin/postgres -k /tmp -D /tmp/postgres/data -p 54321 > /dev/null &
+    /tmp/postgres/usr/lib/postgresql/9.5/bin/pg_ctl -D /tmp/postgres/data -l logfile start
 
 install:
   - cd $PROJECT_DIR
