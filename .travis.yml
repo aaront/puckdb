@@ -6,13 +6,32 @@ branches:
   only:
     - master
 
+env:
+  global:
+    - POSTGRES_DEB="postgresql-9.5_9.5.5-1.pgdg12.4+1_amd64.deb"
+
 before_script:
   - psql -c 'create database puckdb_test;' -U postgres
 
-addons:
-  postgresql: '9.5'
-
 before_install:
+  # postgres
+  - |
+    cd $HOME/.cache/downloads
+    if [ ! -f "$LIBXML2_DEB" ]; then
+      curl -SLO http://security.ubuntu.com/ubuntu/pool/main/libx/libxml2/$LIBXML2_DEB
+    fi
+    if [ ! -f "$POSTGRES_DEB" ]; then
+      curl -SLO http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-9.5/$POSTGRES_DEB
+    fi
+    dpkg -x $LIBXML2_DEB /tmp/libxml2
+    dpkg -x $POSTGRES_DEB /tmp/postgres
+  - |
+    export LD_LIBRARY_PATH=/tmp/libxml2/usr/lib/x86_64-linux-gnu
+    /tmp/postgres/usr/lib/postgresql/9.5/bin/initdb /tmp/postgres/data --nosync -U postgres
+    sed -i -e 's/#fsync.*/fsync = off/' /tmp/postgres/data/postgresql.conf
+    sed -i -e 's/#synchronous_commit.*/synchronous_commit = off/' /tmp/postgres/data/postgresql.conf
+    sed -i -e 's/#full_page_writes.*/full_page_writes = off/' /tmp/postgres/data/postgresql.conf
+    /tmp/postgres/usr/lib/postgresql/9.5/bin/postgres -k /tmp -D /tmp/postgres/data -p 54321 > /dev/null &
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
