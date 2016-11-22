@@ -1,11 +1,12 @@
 import asyncio
-import contextlib
 import os
+from typing import List
 
 import sqlalchemy as sa
+from sqlalchemy.sql.dml import Insert
 from aiopg import sa as async_sa
 
-from puckdb.models import GameState, EventType
+from puckdb.models import GameState, EventType, ShotAim, ShotType
 
 metadata = sa.MetaData()
 
@@ -14,7 +15,7 @@ connect_str = os.getenv('PUCKDB_DATABASE', None)
 team_tbl = sa.Table('team', metadata,
     sa.Column('id', sa.SmallInteger, primary_key=True),
     sa.Column('name', sa.String),
-    sa.Column('short_name', sa.String),
+    sa.Column('team_name', sa.String),
     sa.Column('abbreviation', sa.String),
     sa.Column('city', sa.String)
 )
@@ -36,17 +37,19 @@ event_tbl = sa.Table('event', metadata,
     sa.Column('team', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('type', sa.Enum(EventType, name='game_event'), nullable=False),
     sa.Column('time', sa.Time, nullable=False),
-    sa.Column('secondary_type', sa.String),
+    sa.Column('shot_type', sa.Enum(ShotType, name='shot_type'), nullable=False),
+    sa.Column('shot_aim', sa.Enum(ShotAim, name='shot_aim'), nullable=False),
     sa.Column('strength', sa.String),
     sa.Column('period', sa.SmallInteger, nullable=False)
 )
 
-
-@contextlib.contextmanager
-async def create_connection(loop: asyncio.AbstractEventLoop, dsn: str = None):
+async def execute(command_or_commands: Insert or List[Insert], loop: asyncio.AbstractEventLoop, dsn: str = None):
     async with async_sa.create_engine(dsn=dsn or connect_str, loop=loop) as engine:
         async with engine.acquire() as conn:
-            await conn
+            if isinstance(command_or_commands, Insert):
+                command_or_commands = [command_or_commands]
+            for command in command_or_commands:
+                await conn.execute(command)
 
 
 def create(dsn=None):

@@ -1,10 +1,13 @@
-import abc
 import asyncio
 import itertools
 import ujson
-from typing import List
+from typing import List, Iterable
 
+import abc
 import aiohttp
+import tqdm
+
+from . import db
 
 try:
     import uvloop
@@ -32,15 +35,11 @@ class BaseScraper(object):
         self.sem = asyncio.Semaphore(concurrency, loop=self.loop)
         self.save = save
 
-    async def _process_and_save(self, data : dict) -> List[dict]:
+    async def _process_and_save(self, data: dict) -> List[dict]:
         data = await self._process(data)
         if self.save:
-            await self._save(data)
+            await db.execute(self._insert_sql(data), loop=self.loop)
         return data
-
-    @abc.abstractmethod
-    async def _save(self, data: List[dict]):
-        pass
 
     async def _process(self, data: dict) -> List[dict]:
         return [data]
@@ -51,13 +50,22 @@ class BaseScraper(object):
                 assert response.status == 200
                 return await self._process_and_save(await response.json(loads=ujson.loads))
 
+    async def _wait_progress(self, session: aiohttp.ClientSession) -> Iterable[asyncio.Future]:
+        tasks = self._get_tasks(session)
+        for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            await f
+
     @abc.abstractmethod
-    def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
+    def _insert_sql(self, data: List[dict]) -> List[db.Insert]:
         pass
 
-    def save(self):
+    @abc.abstractmethod
+    def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Task]:
+        pass
+
+    def fetch(self):
         with aiohttp.ClientSession(loop=self.loop) as session:
-            self.loop.run_until_complete(self._get_tasks(session, True))
+            self.loop.run_until_complete(self._wait_progress(session))
 
     def get(self):
         with aiohttp.ClientSession(loop=self.loop) as session:
@@ -75,7 +83,15 @@ class TeamScraper(BaseScraper):
     async def _process(self, data: dict) -> List[dict]:
         return [data['teams'][0]]
 
-    async def _save(self, data: List[dict]):
+    def _insert_sql(self, data: List[dict]):
+        team = data[0]
+        return [db.team_tbl.insert().values(
+            id=team['id'],
+            name=team['name'],
+            team_name=team['teamName'],
+            abbreviation=team['abbreviation'],
+            city=team['locationName']
+        )]
         pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
@@ -99,7 +115,7 @@ class ScheduleScraper(BaseScraper):
                 games.extend(daily['games'])
         return games
 
-    async def _save(self, data: List[dict]):
+    def _insert_sql(self, data: List[dict]):
         pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
@@ -116,7 +132,7 @@ class GameScraper(BaseScraper):
                  save: bool = True):
         super().__init__(filter_by, concurrency, loop, save)
 
-    async def _save(self, data: List[dict]):
+    def _insert_sql(self, data: List[dict]):
         pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:

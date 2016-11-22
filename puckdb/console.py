@@ -1,6 +1,7 @@
 import click
 
-from . import db
+from puckdb import db
+from puckdb.scrapers import TeamScraper
 
 
 @click.command(help='Initialize the database')
@@ -12,12 +13,24 @@ def init(connect=None):
     db.create(connect)
 
 
+@click.command(help='Populate teams')
+def teams():
+    TeamScraper(save=True).fetch()
+
+
+@click.group()
+def fetch():
+    pass
+
+
 @click.group()
 @click.version_option()
 def main():
     pass
 
 
+fetch.add_command(teams)
+main.add_command(fetch)
 main.add_command(init)
 
 if __name__ == '__main__':

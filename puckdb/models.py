@@ -25,10 +25,20 @@ class EventType(enum.Enum):
     takeaway = 10
 
 
-class ShotType(enum.Enum):
+class ShotAim(enum.Enum):
     on_goal = 0
     blocked = 1
     missed = 2
+
+
+class ShotType(enum.Enum):
+    backhand = 0
+    deflected = 1
+    slap = 2
+    snap = 3
+    tip = 4
+    wrap_around = 5
+    wrist = 6
 
 
 class Event(object):
@@ -49,8 +59,9 @@ class Event(object):
 
 
 class Shot(Event):
-    def __init__(self, game_id: int, team_id: int, type: EventType, time: time, x: float, y: float, shot_type: ShotType):
+    def __init__(self, game_id: int, team_id: int, type: EventType, time: time, x: float, y: float, shot_aim: ShotAim, shot_type: ShotType):
         super().__init__(game_id, team_id, type, time, x, y)
+        self.shot_aim = shot_aim
         self.shot_type = shot_type
 
 
