@@ -2,8 +2,7 @@ click
 cchardet
 aiohttp
 aiopg
-sqlalchemy==1.1.0b3
+sqlalchemy>1.1
 python-dateutil
 ujson
-pandas
 tqdm
