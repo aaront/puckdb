@@ -54,7 +54,7 @@ class BaseScraper(object):
 
     async def _wait_progress(self, session: aiohttp.ClientSession) -> Iterable[asyncio.Future]:
         tasks = self._get_tasks(session)
-        for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+        for f in tqdm.tqdm(asyncio.as_completed(tasks, loop=self.loop), total=len(tasks)):
             await f
 
     @abc.abstractmethod

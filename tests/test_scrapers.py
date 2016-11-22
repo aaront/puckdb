@@ -3,15 +3,17 @@ import unittest
 from datetime import datetime
 
 from puckdb import filters, scrapers
+from puckdb.db import create, drop
 
 
 class TestAsyncScraper(unittest.TestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(None)
+        create()
 
     def tearDown(self):
-        pass
+        drop()
 
 
 class TestScheduleScraper(TestAsyncScraper):
