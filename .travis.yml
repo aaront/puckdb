@@ -8,12 +8,17 @@ branches:
 
 env:
   global:
+    - PROJECT_DIR="$PWD"
+    - LIBXML2_DEB="libxml2_2.7.8.dfsg-5.1ubuntu4.15_amd64.deb"
     - POSTGRES_DEB="postgresql-9.5_9.5.5-1.pgdg12.4+1_amd64.deb"
 
 before_script:
   - psql -c 'create database puckdb_test;' -U postgres
 
 before_install:
+  - |
+    mkdir -p $HOME/.cache/downloads
+    mkdir -p $HOME/.cache/pip
   # postgres
   - |
     cd $HOME/.cache/downloads
@@ -40,6 +45,7 @@ before_install:
   - conda update -q conda
 
 install:
+  - cd $PROJECT_DIR
   - deps='pip numpy pandas requests nose sphinx'
   - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
   - export PATH=$HOME/py/bin:$PATH
