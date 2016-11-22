@@ -1,11 +1,12 @@
+import abc
 import asyncio
 import itertools
 import ujson
 from typing import List, Iterable
 
-import abc
 import aiohttp
 import tqdm
+from sqlalchemy.dialects.postgresql import insert
 
 from . import db
 
@@ -87,14 +88,20 @@ class TeamScraper(BaseScraper):
 
     def _insert_sql(self, data: List[dict]):
         team = data[0]
-        return [db.team_tbl.insert().values(
-            id=team['id'],
+        team_update = dict(
             name=team['name'],
             team_name=team['teamName'],
             abbreviation=team['abbreviation'],
             city=team['locationName']
+        )
+        insert_team = insert(db.team_tbl).values(
+            id=team['id'],
+            **team_update
+        )
+        return [insert_team.on_conflict_do_update(
+            constraint=db.team_tbl.primary_key,
+            set_=team_update
         )]
-        pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
