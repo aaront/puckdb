@@ -1,0 +1,15 @@
+machine:
+  python:
+    version: 3.5.2
+  environment:
+    COVERALLS_REPO_TOKEN: jFFnA4azRs6DZTDK3CoKU8jgJBg4DvZyF
+    PUCKDB_DATABASE: postgres://ubuntu:@127.0.0.1:5432/circle_test
+
+dependencies:
+  override:
+    - pip install nose coveralls
+    - pip install -r requirements.txt
+
+test:
+  override:
+    - nosetests --with-coverage
