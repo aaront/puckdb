@@ -1,8 +1,8 @@
 puckdb
 ======
 
-.. image:: https://img.shields.io/travis/aaront/puckdb/master.svg?style=flat
-    :target: https://travis-ci.org/aaront/puckdb
+.. image:: https://img.shields.io/circleci/project/github/aaront/puckdb/master.svg?style=flat
+    :target: https://circleci.com/gh/aaront/puckdb
     :alt: Build Status
 
 .. image:: https://img.shields.io/coveralls/aaront/puckdb/master.svg?style=flat
