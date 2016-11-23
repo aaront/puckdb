@@ -27,4 +27,4 @@ class TestScheduleScraper(TestAsyncScraper):
 class TestTeamScraper(TestAsyncScraper):
     def test_get_teams(self):
         teams = scrapers.TeamScraper(loop=self.loop).get()
-        self.assertEqual(53, len(teams))
+        self.assertEqual(54, len(teams))

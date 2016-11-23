@@ -5,8 +5,8 @@ puckdb
     :target: https://circleci.com/gh/aaront/puckdb
     :alt: Build Status
 
-.. image:: https://img.shields.io/coveralls/aaront/puckdb/master.svg?style=flat
-    :target: https://coveralls.io/github/aaront/puckdb
+.. image:: https://img.shields.io/codecov/c/github/aaront/puckdb/master.svg?style=flat
+    :target: https://codecov.io/gh/aaront/puckdb
     :alt: Code Coverage
 
 An async-first hockey data extractor and API.
