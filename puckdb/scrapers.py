@@ -105,7 +105,7 @@ class TeamScraper(BaseScraper):
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
-            self.url.format(team_id=team_id) for team_id in range(1, 54)]
+            self.url.format(team_id=team_id) for team_id in range(1, 55)]
         return [asyncio.ensure_future(self._fetch(session, url), loop=self.loop) for url in urls]
 
 
