@@ -1,24 +1,64 @@
 import asyncio
+import enum
+
+import abc
 import os
 from typing import List
 
 import sqlalchemy as sa
-from sqlalchemy.sql.dml import Insert
+from sqlalchemy import Table
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.sql import Insert
 from aiopg import sa as async_sa
-
-from puckdb.models import GameState, EventType, ShotAim, ShotType
 
 metadata = sa.MetaData()
 
 connect_str = os.getenv('PUCKDB_DATABASE', None)
 
-team_tbl = sa.Table('team', metadata,
-    sa.Column('id', sa.SmallInteger, primary_key=True),
-    sa.Column('name', sa.String),
-    sa.Column('team_name', sa.String),
-    sa.Column('abbreviation', sa.String),
-    sa.Column('city', sa.String)
-)
+
+class SkaterPosition(enum.Enum):
+    center = 0
+    left_wing = 1
+    right_wing = 2
+    defense = 3
+    goalie = 4
+
+
+class GameState(enum.Enum):
+    not_started = -1
+    in_progress = 0
+    finished = 1
+
+
+class EventType(enum.Enum):
+    unknown = -1
+    blocked_shot = 0
+    challenge = 1
+    faceoff = 2
+    giveaway = 3
+    goal = 4
+    hit = 5
+    missed_shot = 6
+    penalty = 7
+    shot = 8
+    stop = 9
+    takeaway = 10
+
+
+class ShotAim(enum.Enum):
+    on_goal = 0
+    blocked = 1
+    missed = 2
+
+
+class ShotType(enum.Enum):
+    backhand = 0
+    deflected = 1
+    slap = 2
+    snap = 3
+    tip = 4
+    wrap_around = 5
+    wrist = 6
 
 game_tbl = sa.Table('game', metadata,
     sa.Column('id', sa.BigInteger, primary_key=True),
@@ -29,6 +69,21 @@ game_tbl = sa.Table('game', metadata,
     sa.Column('start', sa.DateTime, index=True),
     sa.Column('end', sa.DateTime),
     sa.Column('periods', sa.SmallInteger)
+)
+
+team_tbl = sa.Table('team', metadata,
+    sa.Column('id', sa.SmallInteger, primary_key=True),
+    sa.Column('name', sa.String),
+    sa.Column('team_name', sa.String),
+    sa.Column('abbreviation', sa.String),
+    sa.Column('city', sa.String)
+)
+
+skater_tbl = sa.Table('skater', metadata,
+    sa.Column('id', sa.Integer, primary_key=True),
+    sa.Column('first_name', sa.String),
+    sa.Column('last_name', sa.String),
+    sa.Column('position', sa.Enum(SkaterPosition, name='skater_position'))
 )
 
 event_tbl = sa.Table('event', metadata,
@@ -61,3 +116,52 @@ def create(dsn=None):
 def drop(dsn=None):
     engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)
+
+
+class DbModel(object):
+    def __init__(self, table: Table, data: dict):
+        self.table = table
+        self.data = data
+
+    @abc.abstractmethod
+    def to_dict(self) -> dict:
+        pass
+
+    @property
+    def upsert_sql(self) -> Insert:
+        update = self.to_dict()
+        insert_data = insert(self.table).values(
+            **update
+        )
+        return insert_data.on_conflict_do_update(
+            constraint=self.table.primary_key,
+            set_=update
+        )
+
+
+class Event(DbModel):
+    def __init__(self, data: dict):
+        super(Event, self).__init__(event_tbl, data)
+
+    def to_dict(self):
+        pass
+
+    @staticmethod
+    def parse_type(type_str: str) -> EventType:
+        for event_type in EventType:
+            if event_type.name == type_str.lower():
+                return event_type
+        return EventType.unknown
+
+
+class Team(DbModel):
+    def __init__(self, data: dict):
+        super(Team, self).__init__(team_tbl, data)
+
+    def to_dict(self):
+        return dict(
+            name=self.data['name'],
+            team_name=self.data['teamName'],
+            abbreviation=self.data['abbreviation'],
+            city=self.data['locationName']
+        )

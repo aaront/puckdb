@@ -6,8 +6,8 @@ from typing import List, Iterable
 
 import aiohttp
 import tqdm
-from sqlalchemy.dialects.postgresql import insert
 
+import puckdb.db
 from . import db
 
 try:
@@ -40,7 +40,7 @@ class BaseScraper(object):
         data = await self._process(data)
         if self.save:
             insert_sql = self._insert_sql(data)
-            if insert_sql:
+            if insert_sql is not None:
                 await db.execute(insert_sql, loop=self.loop)
         return data
 
@@ -58,8 +58,8 @@ class BaseScraper(object):
         for f in tqdm.tqdm(asyncio.as_completed(tasks, loop=self.loop), total=len(tasks)):
             await f
 
-    @abc.abstractmethod
-    def _insert_sql(self, data: List[dict]) -> List[db.Insert]:
+    @abc.abstractstaticmethod
+    def _insert_sql(data: List[dict]) -> List[db.Insert]:
         pass
 
     @abc.abstractmethod
@@ -86,22 +86,9 @@ class TeamScraper(BaseScraper):
     async def _process(self, data: dict) -> List[dict]:
         return [data['teams'][0]]
 
-    def _insert_sql(self, data: List[dict]):
-        team = data[0]
-        team_update = dict(
-            name=team['name'],
-            team_name=team['teamName'],
-            abbreviation=team['abbreviation'],
-            city=team['locationName']
-        )
-        insert_team = insert(db.team_tbl).values(
-            id=team['id'],
-            **team_update
-        )
-        return [insert_team.on_conflict_do_update(
-            constraint=db.team_tbl.primary_key,
-            set_=team_update
-        )]
+    @staticmethod
+    def _insert_sql(data: List[dict]):
+        return puckdb.db.Team(data[0]).upsert_sql
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
         urls = [
@@ -124,7 +111,8 @@ class ScheduleScraper(BaseScraper):
                 games.extend(daily['games'])
         return games
 
-    def _insert_sql(self, data: List[dict]):
+    @staticmethod
+    def _insert_sql(data: List[dict]):
         pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:
@@ -141,7 +129,8 @@ class GameScraper(BaseScraper):
                  save: bool = True):
         super().__init__(filter_by, concurrency, loop, save)
 
-    def _insert_sql(self, data: List[dict]):
+    @staticmethod
+    def _insert_sql(data: List[dict]):
         pass
 
     def _get_tasks(self, session: aiohttp.ClientSession) -> List[asyncio.Future]:

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from .. import filters, scrapers, models
+from .. import db, scrapers
 
 
 def get_events(game: dict):
@@ -18,7 +18,7 @@ def get_events(game: dict):
             ev['periodTime'] = period_time
             ev['time'] = ((period - 1) * timedelta(minutes=20)) + period_time
             result = event['result']
-            result['type'] = models.Event.parse_type(result['eventTypeId'])
+            result['type'] = db.Event.parse_type(result['eventTypeId'])
             if 'strength' in result:
                 result['strength'] = result['strength']['code']
             del result['event']
