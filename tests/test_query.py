@@ -68,4 +68,4 @@ class TestGameQuery(unittest.TestCase):
         date = datetime(2016, 2, 23)
         game_query = query.GameQuery(from_date=date, to_date=date)
         urls = list(game_query.urls)
-        self.assertEqual(9, urls)
+        self.assertEqual(9, len(urls))
