@@ -2,7 +2,7 @@ import asyncio
 import unittest
 from datetime import datetime
 
-from puckdb import filters, scrapers
+from puckdb import query, scrapers
 from puckdb.db import create, drop
 
 
@@ -19,7 +19,7 @@ class TestAsyncScraper(unittest.TestCase):
 class TestScheduleScraper(TestAsyncScraper):
     def test_one_day(self):
         day = datetime(2016, 4, 30)
-        game_filter = filters.GameFilter(from_date=day, to_date=day)
+        game_filter = query.GameQuery(from_date=day, to_date=day)
         games = scrapers.GameScraper(game_filter, loop=self.loop).get()
         self.assertEqual(2, len(games))
 

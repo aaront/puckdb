@@ -139,6 +139,14 @@ class DbModel(object):
         )
 
 
+class Game(DbModel):
+    def __init__(self, data: dict):
+        super().__init__(game_tbl, data)
+
+    def to_dict(self):
+        pass
+
+
 class Event(DbModel):
     def __init__(self, data: dict):
         super(Event, self).__init__(event_tbl, data)
