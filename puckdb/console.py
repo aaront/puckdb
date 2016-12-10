@@ -1,7 +1,6 @@
 import click
 
 from puckdb import db
-from puckdb.scrapers import TeamScraper
 
 
 @click.command(help='Initialize the database')
@@ -11,11 +10,6 @@ def init(connect=None):
         if not connect:
             raise Exception('Must provide a connection string')
     db.create(connect)
-
-
-@click.command(help='Populate teams')
-def teams():
-    TeamScraper(save=True).fetch()
 
 
 @click.group()

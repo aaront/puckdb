@@ -1,53 +1,23 @@
-import abc
 from collections import namedtuple
 from datetime import datetime, timedelta
 from typing import List, Optional, Iterator
 
 from dateutil import rrule
-import requests
-import ujson
 
 from . import exceptions
 
-from . import db
-
 Interval = namedtuple('Interval', ['start', 'end'])
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/50.0.2661.86 Safari/537.36'}
-
-SCHEDULE_URL = ('https://statsapi.web.nhl.com/api/v1/schedule?startDate={from_date}&endDate={to_date}'
-                '&expand=schedule.teams&site=en_nhl&teamId=')
-TEAM_URL = 'https://statsapi.web.nhl.com/api/v1/teams/{team_id}'
-GAME_URL = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
 
 
 class BaseQuery(object):
-    def __init__(self, db_model: db.DbModel):
-        self.db_model = db_model
-
-    @abc.abstractproperty
-    def urls(self) -> Iterator[str]:
-        pass
-
-    @abc.abstractmethod
-    def get_insert_sql(self):
+    def __init__(self):
         pass
 
 
 class TeamQuery(BaseQuery):
     def __init__(self, name=None):
+        super().__init__()
         self.name = name
-        super().__init__(db.Team)
-
-    @property
-    def urls(self) -> Iterator[str]:
-        for team_id in range(1, 55):
-            yield TEAM_URL.format(team_id=team_id)
-
-    def get_insert_sql(self):
-        pass
 
 
 class GameQuery(BaseQuery):
@@ -58,27 +28,14 @@ class GameQuery(BaseQuery):
         :type to_date: datetime
         :type team: TeamQuery
         """
+        super().__init__()
         to_date = to_date or datetime.utcnow()
         if from_date and to_date < from_date:
             raise exceptions.FilterException('to_date must be after from_date')
         self.from_date = from_date
         self.to_date = to_date
         self.team = team
-        super().__init__(db.Game)
 
-    @property
-    def urls(self):
-        for game_id in self._get_ids():
-            yield GAME_URL.format(game_id=game_id)
-
-    def _get_ids(self):
-        url = SCHEDULE_URL.format(
-            from_date=self.from_date.strftime('%Y-%m-%d'),
-            to_date=self.to_date.strftime('%Y-%m-%d'))
-        schedule = ujson.loads(requests.get(url, headers=HEADERS).text)
-        for day in schedule['dates']:
-            for game in day['games']:
-                yield game['gamePk']
 
     @property
     def from_season(self) -> Optional[int]:

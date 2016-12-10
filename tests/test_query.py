@@ -57,15 +57,3 @@ class TestGameQuery(unittest.TestCase):
         self.assertEqual(29, len(months))
         self.assertEqual(datetime(2013, 10, 22), months[0].start)
         self.assertEqual(datetime(2013, 11, 21), months[0].end)
-
-    def test_game_ids(self):
-        date = datetime(2016, 2, 23)
-        game_query = query.GameQuery(from_date=date, to_date=date)
-        ids = list(game_query._get_ids())
-        self.assertEqual(9, len(ids))
-
-    def test_game_urls(self):
-        date = datetime(2016, 2, 23)
-        game_query = query.GameQuery(from_date=date, to_date=date)
-        urls = list(game_query.urls)
-        self.assertEqual(9, len(urls))

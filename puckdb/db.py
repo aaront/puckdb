@@ -16,11 +16,11 @@ metadata = sa.MetaData()
 connect_str = os.getenv('PUCKDB_DATABASE', None)
 
 
-class SkaterPosition(enum.Enum):
+class PlayerPosition(enum.Enum):
     center = 0
     left_wing = 1
     right_wing = 2
-    defense = 3
+    defenseman = 3
     goalie = 4
 
 
@@ -79,11 +79,11 @@ team_tbl = sa.Table('team', metadata,
     sa.Column('city', sa.String)
 )
 
-skater_tbl = sa.Table('skater', metadata,
+player_tbl = sa.Table('player', metadata,
     sa.Column('id', sa.Integer, primary_key=True),
     sa.Column('first_name', sa.String),
     sa.Column('last_name', sa.String),
-    sa.Column('position', sa.Enum(SkaterPosition, name='skater_position'))
+    sa.Column('position', sa.Enum(PlayerPosition, name='player_position'))
 )
 
 event_tbl = sa.Table('event', metadata,
@@ -116,6 +116,16 @@ def create(dsn=None):
 def drop(dsn=None):
     engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)
+
+
+def upsert(table: Table, data: dict):
+    insert_data = insert(table).values(
+        **data
+    )
+    return insert_data.on_conflict_do_update(
+        constraint=table.primary_key,
+        set_=data
+    )
 
 
 class DbModel(object):
@@ -163,7 +173,7 @@ class Event(DbModel):
 
 
 class Team(DbModel):
-    def __init__(self, data: dict):
+    def __init__(self, data):
         super(Team, self).__init__(team_tbl, data)
 
     def to_dict(self):
