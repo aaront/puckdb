@@ -19,6 +19,6 @@ class TestAsyncScraper(unittest.TestCase):
 class TestFetch(TestAsyncScraper):
     def test_game_urls(self):
         date = datetime(2016, 2, 23)
-        date_to = datetime(2016, 3, 1)
-        games = fetch.games(date, date_to, loop=self.loop)
+        games = fetch.games(date, date, loop=self.loop)
+        # TODO: Look up games from DB
         # self.assertEqual(9, len(games))

@@ -1,7 +1,7 @@
-from collections import namedtuple
 from datetime import datetime, timedelta
-from typing import List, Optional, Iterator
+from typing import List, Optional
 
+from collections import namedtuple
 from dateutil import rrule
 
 from . import exceptions
@@ -35,7 +35,6 @@ class GameQuery(BaseQuery):
         self.from_date = from_date
         self.to_date = to_date
         self.team = team
-
 
     @property
     def from_season(self) -> Optional[int]:

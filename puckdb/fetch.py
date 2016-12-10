@@ -1,20 +1,20 @@
 import asyncio
+import ujson
 from datetime import datetime
 from typing import List, Iterable
 
 import aiohttp
 import requests
 import tqdm
-import ujson
 
 from . import db, parsers
 
 try:
     import uvloop
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError:
     pass
-
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) '

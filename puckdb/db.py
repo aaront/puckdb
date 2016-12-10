@@ -1,15 +1,14 @@
 import asyncio
 import enum
+from typing import List
 
 import abc
 import os
-from typing import List
-
 import sqlalchemy as sa
+from aiopg import sa as async_sa
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import Insert
-from aiopg import sa as async_sa
 
 metadata = sa.MetaData()
 
@@ -60,6 +59,7 @@ class ShotType(enum.Enum):
     wrap_around = 5
     wrist = 6
 
+
 game_tbl = sa.Table('game', metadata,
     sa.Column('id', sa.BigInteger, primary_key=True),
     sa.Column('season', sa.SmallInteger),
@@ -97,6 +97,7 @@ event_tbl = sa.Table('event', metadata,
     sa.Column('strength', sa.String),
     sa.Column('period', sa.SmallInteger, nullable=False)
 )
+
 
 async def execute(command_or_commands: Insert or List[Insert], loop: asyncio.AbstractEventLoop, dsn: str = None):
     async with async_sa.create_engine(dsn=dsn or connect_str, loop=loop) as engine:
