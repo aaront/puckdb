@@ -5,5 +5,3 @@ aiopg
 sqlalchemy>1.1
 python-dateutil
 ujson
-tqdm
-requests

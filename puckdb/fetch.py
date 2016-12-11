@@ -3,7 +3,6 @@ import ujson
 from datetime import datetime
 
 import aiohttp
-import requests
 
 from . import db, parsers
 
@@ -27,16 +26,6 @@ def games(from_date: datetime, to_date: datetime, concurrency: int = 10,
     loop.run_until_complete(GameFetcher(from_date, to_date, loop, concurrency).run())
 
 
-def _get_game_urls(from_date: datetime, to_date: datetime):
-    url = SCHEDULE_URL.format(
-        from_date=from_date.strftime('%Y-%m-%d'),
-        to_date=to_date.strftime('%Y-%m-%d'))
-    schedule = ujson.loads(requests.get(url, headers=HEADERS).text)
-    for day in schedule['dates']:
-        for game in day['games']:
-            yield GAME_URL.format(game_id=game['gamePk'])
-
-
 class GameFetcher(object):
     def __init__(self, from_date: datetime, to_date: datetime, loop: asyncio.AbstractEventLoop, concurrency: int = 10):
         self.from_date = from_date
@@ -58,6 +47,17 @@ class GameFetcher(object):
             assert response.status == 200
             return await response.json(loads=ujson.loads)
 
+    async def _get_game_urls(self, session: aiohttp.ClientSession, from_date: datetime, to_date: datetime):
+        url = SCHEDULE_URL.format(
+            from_date=from_date.strftime('%Y-%m-%d'),
+            to_date=to_date.strftime('%Y-%m-%d'))
+        schedule = await self.fetch(url, session)
+        urls = []
+        for day in schedule['dates']:
+            for game in day['games']:
+                urls.append(GAME_URL.format(game_id=game['gamePk']))
+        return urls
+
     async def _save(self, game: dict):
         game_data = game['gameData']
         upserts = []
@@ -69,7 +69,8 @@ class GameFetcher(object):
 
     async def run(self):
         with aiohttp.ClientSession(loop=self.loop) as session:
-            for url in _get_game_urls(self.from_date, self.to_date):
+            urls = await self._get_game_urls(session, self.from_date, self.to_date)
+            for url in urls:
                 await self.q.put(url)
             workers = [asyncio.Task(self.work(session), loop=self.loop) for _ in range(self.concurrency)]
             await self.q.join()
