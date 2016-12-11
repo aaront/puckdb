@@ -1,11 +1,9 @@
 import asyncio
 import ujson
 from datetime import datetime
-from typing import List, Iterable
 
 import aiohttp
 import requests
-import tqdm
 
 from . import db, parsers
 
@@ -24,32 +22,9 @@ SCHEDULE_URL = ('https://statsapi.web.nhl.com/api/v1/schedule?startDate={from_da
 GAME_URL = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
 
 
-def games(from_date: datetime, to_date: datetime, concurrency: int = 5,
+def games(from_date: datetime, to_date: datetime, concurrency: int = 10,
           loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
-    sem = asyncio.Semaphore(concurrency, loop=loop)
-    with aiohttp.ClientSession(loop=loop) as session:
-        futures = [asyncio.ensure_future(_fetch(sem, session, url),
-                                         loop=loop) for url in _get_game_urls(from_date, to_date)]
-        loop.run_until_complete(_save_game(futures, loop=loop))
-
-
-async def _save_game(tasks, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()) -> Iterable[asyncio.Future]:
-    for game_task in tqdm.tqdm(asyncio.as_completed(tasks, loop=loop), total=len(tasks)):
-        game = await game_task
-        game_data = game['gameData']
-        upserts = []
-        for _, team in game_data['teams'].items():
-            upserts.append(db.upsert(db.team_tbl, parsers.team(team)))
-        for _, player in game_data['players'].items():
-            upserts.append(db.upsert(db.player_tbl, parsers.player(player)))
-        await db.execute(upserts, loop=loop)
-
-
-async def _fetch(sem: asyncio.Semaphore, session: aiohttp.ClientSession, url: str) -> List[dict]:
-    async with sem:
-        async with session.get(url, headers=HEADERS) as response:
-            assert response.status == 200
-            return await response.json(loads=ujson.loads)
+    loop.run_until_complete(GameFetcher(from_date, to_date, loop, concurrency).run())
 
 
 def _get_game_urls(from_date: datetime, to_date: datetime):
@@ -60,3 +35,43 @@ def _get_game_urls(from_date: datetime, to_date: datetime):
     for day in schedule['dates']:
         for game in day['games']:
             yield GAME_URL.format(game_id=game['gamePk'])
+
+
+class GameFetcher(object):
+    def __init__(self, from_date: datetime, to_date: datetime, loop: asyncio.AbstractEventLoop, concurrency: int = 10):
+        self.from_date = from_date
+        self.to_date = to_date
+        self.concurrency = concurrency
+        self.q = asyncio.Queue(loop=loop)
+        self.loop = loop
+
+    async def work(self, session: aiohttp.ClientSession):
+        while True:
+            url = await self.q.get()
+            game = await self.fetch(url, session)
+            await self._save(game)
+            self.q.task_done()
+
+    @staticmethod
+    async def fetch(url: str, session: aiohttp.ClientSession):
+        async with session.get(url, headers=HEADERS) as response:
+            assert response.status == 200
+            return await response.json(loads=ujson.loads)
+
+    async def _save(self, game: dict):
+        game_data = game['gameData']
+        upserts = []
+        for _, team in game_data['teams'].items():
+            upserts.append(db.upsert(db.team_tbl, parsers.team(team)))
+        for _, player in game_data['players'].items():
+            upserts.append(db.upsert(db.player_tbl, parsers.player(player)))
+        await db.execute(upserts, loop=self.loop)
+
+    async def run(self):
+        with aiohttp.ClientSession(loop=self.loop) as session:
+            for url in _get_game_urls(self.from_date, self.to_date):
+                await self.q.put(url)
+            workers = [asyncio.Task(self.work(session), loop=self.loop) for _ in range(self.concurrency)]
+            await self.q.join()
+            for w in workers:
+                w.cancel()

@@ -119,14 +119,19 @@ def drop(dsn=None):
     metadata.drop_all(engine)
 
 
-def upsert(table: Table, data: dict):
+def upsert(table: Table, data: dict, update_on_conflict=False):
     insert_data = insert(table).values(
         **data
     )
-    return insert_data.on_conflict_do_update(
-        constraint=table.primary_key,
-        set_=data
-    )
+    if update_on_conflict:
+        return insert_data.on_conflict_do_update(
+            constraint=table.primary_key,
+            set_=data
+        )
+    else:
+        return insert_data.on_conflict_do_nothing(
+            constraint=table.primary_key
+        )
 
 
 class DbModel(object):
