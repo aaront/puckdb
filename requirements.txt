@@ -1,7 +1,7 @@
 click
 cchardet
 aiohttp
-aiopg
+asyncpgsa
 sqlalchemy>1.1
 python-dateutil
 ujson

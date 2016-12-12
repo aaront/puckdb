@@ -1,11 +1,11 @@
+import abc
 import asyncio
 import enum
+import os
 from typing import List
 
-import abc
-import os
+import asyncpgsa
 import sqlalchemy as sa
-from aiopg import sa as async_sa
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import Insert
@@ -100,8 +100,8 @@ event_tbl = sa.Table('event', metadata,
 
 
 async def execute(command_or_commands: Insert or List[Insert], loop: asyncio.AbstractEventLoop, dsn: str = None):
-    async with async_sa.create_engine(dsn=dsn or connect_str, loop=loop) as engine:
-        async with engine.acquire() as conn:
+    async with asyncpgsa.create_pool(dsn=dsn or connect_str, loop=loop, min_size=5, max_size=10) as pool:
+        async with pool.acquire() as conn:
             if isinstance(command_or_commands, Insert):
                 command_or_commands = [command_or_commands]
             for command in command_or_commands:
