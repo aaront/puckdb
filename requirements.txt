@@ -5,4 +5,4 @@ aiopg==0.13.0
 sqlalchemy>1.1
 python-dateutil
 ujson==1.35
-tqdm
+tqdm==4.10.0
