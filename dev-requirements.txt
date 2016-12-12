@@ -2,4 +2,4 @@ mypy-lang
 nose
 jedi
 coverage
-typed-ast
+typed-ast==0.6.1
