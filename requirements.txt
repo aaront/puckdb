@@ -6,4 +6,4 @@ click-datetime
 python-dateutil
 pytz
 sqlalchemy>1.1
-ujson
+ujson==1.35
