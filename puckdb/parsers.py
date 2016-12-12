@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 
+from dateutil import parser
+
 from . import db
 
 
 def team(tm: dict):
     return dict(
-        id=tm['id'],
+        id=int(tm['id']),
         name=tm['name'],
         team_name=tm['teamName'],
         abbreviation=tm['abbreviation'],
@@ -15,10 +17,26 @@ def team(tm: dict):
 
 def player(pl: dict):
     return dict(
-        id=pl['id'],
+        id=int(pl['id']),
         first_name=pl['firstName'],
         last_name=pl['lastName'],
         position=pl['primaryPosition']['name'].replace(' ', '_').lower()
+    )
+
+
+def game(gm: dict):
+    game_data = gm['gameData']
+    for type, team in game_data['teams'].items():
+        if type == 'home':
+            home_team = team
+        else:
+            away_team = team
+    return dict(
+        id=int(gm['gamePk']),
+        away=int(away_team['id']),
+        home=int(home_team['id']),
+        start=parser.parse(game_data['datetime']['dateTime']),
+        end=parser.parse(game_data['datetime']['endDateTime'])
     )
 
 

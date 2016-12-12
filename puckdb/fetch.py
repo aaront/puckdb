@@ -61,10 +61,11 @@ class GameFetcher(object):
     async def _save(self, game: dict):
         game_data = game['gameData']
         upserts = []
-        for _, team in game_data['teams'].items():
+        for type, team in game_data['teams'].items():
             upserts.append(db.upsert(db.team_tbl, parsers.team(team)))
         for _, player in game_data['players'].items():
             upserts.append(db.upsert(db.player_tbl, parsers.player(player)))
+        # upserts.append(db.upsert(db.game_tbl, parsers.game(game), True))
         await db.execute(upserts, loop=self.loop)
 
     async def run(self):
