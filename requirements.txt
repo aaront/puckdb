@@ -1,7 +1,7 @@
 cchardet
 aiohttp
 asyncpgsa
-click
+click==6.6
 click-datetime
 python-dateutil
 pytz
