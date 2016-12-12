@@ -1,6 +1,6 @@
 cchardet
 aiohttp
-asyncpgsa
+asyncpgsa==0.7.0
 click
 click-datetime
 python-dateutil
