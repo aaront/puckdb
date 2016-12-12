@@ -1,26 +1,25 @@
+import abc
 import asyncio
 import enum
-
-import abc
 import os
 from typing import List
 
+import asyncpgsa
 import sqlalchemy as sa
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import Insert
-from aiopg import sa as async_sa
 
 metadata = sa.MetaData()
 
 connect_str = os.getenv('PUCKDB_DATABASE', None)
 
 
-class SkaterPosition(enum.Enum):
+class PlayerPosition(enum.Enum):
     center = 0
     left_wing = 1
     right_wing = 2
-    defense = 3
+    defenseman = 3
     goalie = 4
 
 
@@ -60,15 +59,13 @@ class ShotType(enum.Enum):
     wrap_around = 5
     wrist = 6
 
+
 game_tbl = sa.Table('game', metadata,
     sa.Column('id', sa.BigInteger, primary_key=True),
-    sa.Column('season', sa.SmallInteger),
-    sa.Column('status', sa.Enum(GameState, name='game_state')),
     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('home', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
-    sa.Column('start', sa.DateTime, index=True),
-    sa.Column('end', sa.DateTime),
-    sa.Column('periods', sa.SmallInteger)
+    sa.Column('date_start', sa.DateTime(timezone=True), index=True),
+    sa.Column('date_end', sa.DateTime(timezone=True))
 )
 
 team_tbl = sa.Table('team', metadata,
@@ -79,11 +76,11 @@ team_tbl = sa.Table('team', metadata,
     sa.Column('city', sa.String)
 )
 
-skater_tbl = sa.Table('skater', metadata,
+player_tbl = sa.Table('player', metadata,
     sa.Column('id', sa.Integer, primary_key=True),
     sa.Column('first_name', sa.String),
     sa.Column('last_name', sa.String),
-    sa.Column('position', sa.Enum(SkaterPosition, name='skater_position'))
+    sa.Column('position', sa.Enum(PlayerPosition, name='player_position'))
 )
 
 event_tbl = sa.Table('event', metadata,
@@ -98,9 +95,10 @@ event_tbl = sa.Table('event', metadata,
     sa.Column('period', sa.SmallInteger, nullable=False)
 )
 
+
 async def execute(command_or_commands: Insert or List[Insert], loop: asyncio.AbstractEventLoop, dsn: str = None):
-    async with async_sa.create_engine(dsn=dsn or connect_str, loop=loop) as engine:
-        async with engine.acquire() as conn:
+    async with asyncpgsa.create_pool(dsn=dsn or connect_str, loop=loop, min_size=5, max_size=10) as pool:
+        async with pool.acquire() as conn:
             if isinstance(command_or_commands, Insert):
                 command_or_commands = [command_or_commands]
             for command in command_or_commands:
@@ -116,6 +114,21 @@ def create(dsn=None):
 def drop(dsn=None):
     engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)
+
+
+def upsert(table: Table, data: dict, update_on_conflict=False):
+    insert_data = insert(table).values(
+        **data
+    )
+    if update_on_conflict:
+        return insert_data.on_conflict_do_update(
+            constraint=table.primary_key,
+            set_=data
+        )
+    else:
+        return insert_data.on_conflict_do_nothing(
+            constraint=table.primary_key
+        )
 
 
 class DbModel(object):
@@ -139,6 +152,14 @@ class DbModel(object):
         )
 
 
+class Game(DbModel):
+    def __init__(self, data: dict):
+        super().__init__(game_tbl, data)
+
+    def to_dict(self):
+        pass
+
+
 class Event(DbModel):
     def __init__(self, data: dict):
         super(Event, self).__init__(event_tbl, data)
@@ -155,7 +176,7 @@ class Event(DbModel):
 
 
 class Team(DbModel):
-    def __init__(self, data: dict):
+    def __init__(self, data):
         super(Team, self).__init__(team_tbl, data)
 
     def to_dict(self):

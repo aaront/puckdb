@@ -1,7 +1,7 @@
-from collections import namedtuple
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
+from collections import namedtuple
 from dateutil import rrule
 
 from . import exceptions
@@ -9,24 +9,26 @@ from . import exceptions
 Interval = namedtuple('Interval', ['start', 'end'])
 
 
-class BaseFilter(object):
-    def split(self):
+class BaseQuery(object):
+    def __init__(self):
         pass
 
 
-class TeamFilter(BaseFilter):
+class TeamQuery(BaseQuery):
     def __init__(self, name=None):
+        super().__init__()
         self.name = name
 
 
-class GameFilter(BaseFilter):
+class GameQuery(BaseQuery):
     def __init__(self, from_date=None, to_date=None, team=None):
         """
 
         :type from_date: datetime
         :type to_date: datetime
-        :type team: TeamFilter
+        :type team: TeamQuery
         """
+        super().__init__()
         to_date = to_date or datetime.utcnow()
         if from_date and to_date < from_date:
             raise exceptions.FilterException('to_date must be after from_date')
@@ -35,13 +37,13 @@ class GameFilter(BaseFilter):
         self.team = team
 
     @property
-    def from_season(self) -> int:
+    def from_season(self) -> Optional[int]:
         if not self.from_date:
             return None
         return self.from_date.year if self.from_date.month >= 9 else self.from_date.year - 1
 
     @property
-    def to_season(self) -> int:
+    def to_season(self) -> Optional[int]:
         if not self.to_date:
             return None
         return self.to_date.year - 1 if self.to_date.month < 9 else self.to_date.year
