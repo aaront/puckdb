@@ -1,5 +1,5 @@
 mypy-lang
 nose
-jedi
+jedi==0.9.0
 coverage
 typed-ast
