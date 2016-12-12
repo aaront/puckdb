@@ -1,31 +1,53 @@
-import click
+import sys
 
-from puckdb import db
+from datetime import datetime
+
+import click
+import click_datetime
+
+from puckdb import db, fetch
+
+DATE_PARAM = click_datetime.Datetime(format='%Y-%m-%d')
+
+
+def abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
 
 
 @click.command(help='Initialize the database')
-@click.argument('connect', nargs=1, required=False)
-def init(connect=None):
-    if not db.connect_str:
-        if not connect:
-            raise Exception('Must provide a connection string')
-    db.create(connect)
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to init the database?')
+def init():
+    db.create()
 
 
-@click.group()
-def fetch():
-    pass
+@click.command(help='Remove all data from the database')
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to drop the database?')
+def drop():
+    db.drop()
+
+
+@click.command()
+@click.option('--from-date', type=DATE_PARAM, default=datetime(2016, 10, 1))
+@click.option('--to-date', type=DATE_PARAM, default=datetime.now())
+def get(from_date, to_date):
+    fetch.games(from_date, to_date)
 
 
 @click.group()
 @click.version_option()
 def main():
-    pass
+    if db.connect_str is None:
+        click.echo('ERROR: `PUCKDB_DATABASE` environment variable not specified.')
+        sys.exit(1)
 
-
-fetch.add_command(teams)
-main.add_command(fetch)
+main.add_command(get)
 main.add_command(init)
+main.add_command(drop)
 
 if __name__ == '__main__':
     main()

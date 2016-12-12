@@ -2,18 +2,17 @@ import asyncio
 import unittest
 from datetime import datetime
 
-from puckdb import fetch
-from puckdb.db import create, drop
+from puckdb import db, fetch
 
 
 class TestAsyncScraper(unittest.TestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(None)
-        create()
+        db.create()
 
     def tearDown(self):
-        drop()
+        db.drop()
 
 
 class TestFetch(TestAsyncScraper):
