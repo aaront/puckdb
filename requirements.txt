@@ -3,7 +3,7 @@ aiohttp
 asyncpgsa
 click
 click-datetime
-python-dateutil
+python-dateutil==2.6.0
 pytz
 sqlalchemy>1.1
 ujson
