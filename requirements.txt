@@ -4,5 +4,5 @@ aiohttp
 aiopg
 sqlalchemy>1.1
 python-dateutil
-ujson
+ujson==1.35
 tqdm
