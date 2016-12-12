@@ -2,7 +2,7 @@ cchardet
 aiohttp
 asyncpgsa
 click
-click-datetime
+click-datetime==0.2
 python-dateutil
 pytz
 sqlalchemy>1.1
