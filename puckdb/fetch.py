@@ -65,7 +65,7 @@ class GameFetcher(object):
             upserts.append(db.upsert(db.team_tbl, parsers.team(team)))
         for _, player in game_data['players'].items():
             upserts.append(db.upsert(db.player_tbl, parsers.player(player)))
-        # upserts.append(db.upsert(db.game_tbl, parsers.game(game), True))
+        upserts.append(db.upsert(db.game_tbl, parsers.game(game), True))
         await db.execute(upserts, loop=self.loop)
 
     async def run(self):

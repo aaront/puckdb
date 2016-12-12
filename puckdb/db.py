@@ -64,8 +64,8 @@ game_tbl = sa.Table('game', metadata,
     sa.Column('id', sa.BigInteger, primary_key=True),
     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('home', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
-    sa.Column('start', sa.DateTime, index=True),
-    sa.Column('end', sa.DateTime)
+    # sa.Column('start', sa.DateTime, index=True),
+    # sa.Column('end', sa.DateTime)
 )
 
 team_tbl = sa.Table('team', metadata,

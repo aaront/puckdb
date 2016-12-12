@@ -35,8 +35,8 @@ def game(gm: dict):
         id=int(gm['gamePk']),
         away=int(away_team['id']),
         home=int(home_team['id']),
-        start=parser.parse(game_data['datetime']['dateTime']),
-        end=parser.parse(game_data['datetime']['endDateTime'])
+        # start=parser.parse(game_data['datetime']['dateTime']),
+        # end=parser.parse(game_data['datetime']['endDateTime'])
     )
 
 
