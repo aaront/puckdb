@@ -1,8 +1,8 @@
-click
-cchardet
-aiohttp
-aiopg
+click==6.6
+cchardet==1.1.1
+aiohttp==1.1.6
+aiopg==0.13.0
 sqlalchemy>1.1
-python-dateutil
-ujson
-tqdm
+python-dateutil==2.6.0
+ujson==1.35
+tqdm==4.10.0
