@@ -1,8 +1,9 @@
-click
 cchardet
 aiohttp
 asyncpgsa
-sqlalchemy>1.1
-python-dateutil
-ujson
+click
 click-datetime
+python-dateutil
+pytz
+sqlalchemy>1.1
+ujson

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import pytz
 from dateutil import parser
 
 from . import db
@@ -35,8 +36,8 @@ def game(gm: dict):
         id=int(gm['gamePk']),
         away=int(away_team['id']),
         home=int(home_team['id']),
-        # start=parser.parse(game_data['datetime']['dateTime']),
-        # end=parser.parse(game_data['datetime']['endDateTime'])
+        date_start=parser.parse(game_data['datetime']['dateTime']).astimezone(pytz.utc),
+        date_end=parser.parse(game_data['datetime']['endDateTime']).astimezone(pytz.utc)
     )
 
 
