@@ -1,5 +1,5 @@
 click==6.6
-cchardet
+cchardet==1.1.1
 aiohttp
 aiopg
 sqlalchemy>1.1
