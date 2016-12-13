@@ -2,7 +2,7 @@ import abc
 import asyncio
 import enum
 import os
-from typing import List
+from typing import List, Optional
 
 import asyncpgsa
 import sqlalchemy as sa
@@ -30,7 +30,6 @@ class GameState(enum.Enum):
 
 
 class EventType(enum.Enum):
-    unknown = -1
     blocked_shot = 0
     challenge = 1
     faceoff = 2
@@ -42,12 +41,6 @@ class EventType(enum.Enum):
     shot = 8
     stop = 9
     takeaway = 10
-
-
-class ShotAim(enum.Enum):
-    on_goal = 0
-    blocked = 1
-    missed = 2
 
 
 class ShotType(enum.Enum):
@@ -65,7 +58,7 @@ game_tbl = sa.Table('game', metadata,
     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('home', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
     sa.Column('date_start', sa.DateTime(timezone=True), index=True),
-    sa.Column('date_end', sa.DateTime(timezone=True))
+    sa.Column('date_end', sa.DateTime(timezone=True), nullable=True)
 )
 
 team_tbl = sa.Table('team', metadata,
@@ -87,11 +80,9 @@ event_tbl = sa.Table('event', metadata,
     sa.Column('game', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False, primary_key=True),
     sa.Column('id', sa.Integer, nullable=False, primary_key=True),
     sa.Column('team', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
-    sa.Column('type', sa.Enum(EventType, name='game_event'), nullable=False),
-    sa.Column('time', sa.Time, nullable=False),
-    sa.Column('shot_type', sa.Enum(ShotType, name='shot_type'), nullable=False),
-    sa.Column('shot_aim', sa.Enum(ShotAim, name='shot_aim'), nullable=False),
-    sa.Column('strength', sa.String),
+    sa.Column('type', sa.Enum(EventType, name='event_type'), nullable=False),
+    sa.Column('date', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('shot_type', sa.Enum(ShotType, name='shot_type')),
     sa.Column('period', sa.SmallInteger, nullable=False)
 )
 
@@ -168,11 +159,18 @@ class Event(DbModel):
         pass
 
     @staticmethod
-    def parse_type(type_str: str) -> EventType:
+    def parse_type(type_str: str) -> Optional[EventType]:
         for event_type in EventType:
             if event_type.name == type_str.lower():
                 return event_type
-        return EventType.unknown
+        return None
+
+    @staticmethod
+    def parse_shot_type(type_str: str) -> Optional[EventType]:
+        for shot_type in ShotType:
+            if shot_type.name == type_str.lower():
+                return shot_type
+        return None
 
 
 class Team(DbModel):

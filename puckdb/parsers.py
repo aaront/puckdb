@@ -27,38 +27,39 @@ def player(pl: dict):
 
 def game(gm: dict):
     game_data = gm['gameData']
+    game_datetime = game_data['datetime']
     for type, team in game_data['teams'].items():
         if type == 'home':
             home_team = team
         else:
             away_team = team
-    return dict(
+    data = dict(
         id=int(gm['gamePk']),
         away=int(away_team['id']),
         home=int(home_team['id']),
-        date_start=parser.parse(game_data['datetime']['dateTime']).astimezone(pytz.utc),
-        date_end=parser.parse(game_data['datetime']['endDateTime']).astimezone(pytz.utc)
+        date_start=parser.parse(game_datetime['dateTime']).astimezone(pytz.utc)
     )
+    if 'endDateTime' in game_datetime:
+        data['date_end'] = parser.parse(game_datetime['endDateTime']).astimezone(pytz.utc)
+    return data
 
 
-def event(ev: dict):
-    ev['id'] = event['eventId']
-    ev.update(event['coordinates'])
-    about = event['about']
-    period = int(about['period'])
-    ev['period'] = period
-    period_time = datetime.strptime(about['periodTime'], '%M:%S')
-    period_time = timedelta(minutes=period_time.minute, seconds=period_time.second)
-    ev['periodTime'] = period_time
-    ev['time'] = ((period - 1) * timedelta(minutes=20)) + period_time
-    result = event['result']
-    result['type'] = db.Event.parse_type(result['eventTypeId'])
-    if 'strength' in result:
-        result['strength'] = result['strength']['code']
-    del result['event']
-    del result['eventCode']
-    del result['eventTypeId']
-    ev.update(result)
-    if 'team' in event:
-        ev['team_id'] = int(event['team']['id'])
-    return ev
+def event(gid: int, ev: dict):
+    if 'team' not in ev:
+        return None
+    about = ev['about']
+    result = ev['result']
+    event_type = db.Event.parse_type(result['eventTypeId'])
+    if event_type is None:
+        return None
+    ev_data = dict(
+        game=gid,
+        id=about['eventId'],
+        team=ev['team']['id'],
+        type=event_type.name,
+        date=parser.parse(about['dateTime']).astimezone(pytz.utc),
+        period=about['period']
+    )
+    # if event_type is db.EventType.shot and 'secondaryType' in result:
+    #     ev_data['shot_type'] = db.Event.parse_shot_type(result['secondaryType']).value
+    return ev_data

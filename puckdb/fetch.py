@@ -66,6 +66,11 @@ class GameFetcher(object):
         for _, player in game_data['players'].items():
             upserts.append(db.upsert(db.player_tbl, parsers.player(player)))
         upserts.append(db.upsert(db.game_tbl, parsers.game(game), True))
+        for event in game['liveData']['plays']['allPlays']:
+            parsed_event = parsers.event(game['gamePk'], event)
+            if parsed_event is None:
+                continue
+            upserts.append(db.upsert(db.event_tbl, parsed_event, True))
         await db.execute(upserts, loop=self.loop)
 
     async def run(self):
