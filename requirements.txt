@@ -1,4 +1,4 @@
-cchardet
+cchardet==1.1.1
 aiohttp
 asyncpgsa==0.7.0
 click
