@@ -1,9 +1,9 @@
-cchardet
+cchardet==1.1.1
 aiohttp==1.1.6
-asyncpgsa
-click
+asyncpgsa==0.7.0
+click==6.6
 click-datetime
 python-dateutil
-pytz
+pytz==2016.10
 sqlalchemy>1.1
-ujson
+ujson==1.35
