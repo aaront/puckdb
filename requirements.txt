@@ -1,5 +1,5 @@
 cchardet==1.1.1
-aiohttp==1.1.6
+aiohttp==1.2.0
 asyncpgsa==0.7.0
 click==6.6
 click-datetime==0.2
