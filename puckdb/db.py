@@ -100,6 +100,7 @@ def create(dsn=None):
     engine = sa.create_engine(dsn or connect_str)
     metadata.drop_all(engine)
     metadata.create_all(engine)
+    return engine
 
 
 def drop(dsn=None):

@@ -1,11 +1,9 @@
-import unittest
-
 from puckdb import db
 
 
-class TestModelEvents(unittest.TestCase):
+class TestModelEvents:
     def test_type_parser(self):
-        self.assertEqual(db.EventType.blocked_shot, db.Event.parse_type('BLOCKED_SHOT'))
-        self.assertEqual(db.EventType.shot, db.Event.parse_type('SHOT'))
-        self.assertIsNone(db.Event.parse_type('GAME_SCHEDULED'))  # not tracked
-        self.assertIsNone(db.Event.parse_type('NON_SENSE'))
+        assert db.EventType.blocked_shot == db.Event.parse_type('BLOCKED_SHOT')
+        assert db.EventType.shot == db.Event.parse_type('SHOT')
+        assert db.Event.parse_type('GAME_SCHEDULED') is None  # not tracked
+        assert db.Event.parse_type('NON_SENSE') is None

@@ -6,11 +6,11 @@ machine:
 
 dependencies:
   override:
-    - pip install nose coverage
+    - pip install -r dev-requirements.txt
     - pip install -r requirements.txt
 
 test:
   override:
-    - nosetests --with-coverage --with-xunit --xunit-file=$CIRCLE_TEST_REPORTS/nose-results.xml
+    - py.test --cov-config .coveragerc --cov-report xml:$CIRCLE_TEST_REPORTS/coverage.xml --cov puckdb --junitxml $CIRCLE_TEST_REPORTS/test-results.xml tests/
   post:
     - bash <(curl -s https://codecov.io/bash)
