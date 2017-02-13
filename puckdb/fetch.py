@@ -23,14 +23,13 @@ GAME_URL = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
 
 def games(from_date: datetime, to_date: datetime, concurrency: int = 10,
           loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
-    loop.run_until_complete(GameFetcher(from_date, to_date, loop, concurrency).run())
+    loop.run_until_complete(GameFetcher(from_date, to_date, loop).run(concurrency))
 
 
 class GameFetcher(object):
-    def __init__(self, from_date: datetime, to_date: datetime, loop: asyncio.AbstractEventLoop, concurrency: int = 10):
+    def __init__(self, from_date: datetime, to_date: datetime, loop: asyncio.AbstractEventLoop):
         self.from_date = from_date
         self.to_date = to_date
-        self.concurrency = concurrency
         self.q = asyncio.Queue(loop=loop)
         self.loop = loop
 
@@ -73,12 +72,12 @@ class GameFetcher(object):
             upserts.append(db.upsert(db.event_tbl, parsed_event, True))
         await db.execute(upserts, loop=self.loop)
 
-    async def run(self):
+    async def run(self, concurrency: int = 10):
         with aiohttp.ClientSession(loop=self.loop) as session:
             urls = await self._get_game_urls(session, self.from_date, self.to_date)
             for url in urls:
                 await self.q.put(url)
-            workers = [asyncio.Task(self.work(session), loop=self.loop) for _ in range(self.concurrency)]
+            workers = [asyncio.Task(self.work(session), loop=self.loop) for _ in range(concurrency)]
             await self.q.join()
             for w in workers:
                 w.cancel()

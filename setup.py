@@ -21,6 +21,19 @@ setup(
     package_data={'': ['LICENSE']},
     package_dir={'puckdb': 'puckdb'},
     license='Apache 2.0',
+    install_requires=[
+        'cchardet',
+        'aiohttp',
+        'asyncpgsa',
+        'click',
+        'click-datetime',
+        'python-dateutil',
+        'pytz',
+        'sqlalchemy',
+        'psycopg2',
+        'ujson',
+        'mlalchemy'
+    ],
     entry_points='''
         [console_scripts]
         puckdb=puckdb.console:main
