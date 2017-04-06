@@ -31,8 +31,7 @@ setup(
         'pytz',
         'sqlalchemy',
         'psycopg2',
-        'ujson',
-        'mlalchemy'
+        'ujson'
     ],
     entry_points='''
         [console_scripts]

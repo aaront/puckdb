@@ -5,7 +5,7 @@ from datetime import datetime
 import click
 import click_datetime
 
-from puckdb import db, fetch
+from puckdb import db, fetcher
 
 DATE_PARAM = click_datetime.Datetime(format='%Y-%m-%d')
 
@@ -35,7 +35,7 @@ def drop():
 @click.option('--from-date', type=DATE_PARAM, default=datetime(2016, 10, 1))
 @click.option('--to-date', type=DATE_PARAM, default=datetime.now())
 def get(from_date, to_date):
-    fetch.games(from_date, to_date)
+    fetcher.get_games(from_date, to_date)
 
 
 @click.group()

@@ -5,6 +5,7 @@ from datetime import datetime
 import aiohttp
 
 from . import db, parsers
+from .extern import nhl
 
 try:
     import uvloop
@@ -21,8 +22,13 @@ SCHEDULE_URL = ('https://statsapi.web.nhl.com/api/v1/schedule?startDate={from_da
 GAME_URL = 'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live'
 
 
-def games(from_date: datetime, to_date: datetime, concurrency: int = 10,
-          loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+    with aiohttp.ClientSession(loop=loop) as session:
+        teams = await nhl.get_teams(session)
+    return teams
+
+def get_games(from_date: datetime, to_date: datetime, concurrency: int = 10,
+              loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     loop.run_until_complete(GameFetcher(from_date, to_date, loop).run(concurrency))
 
 
