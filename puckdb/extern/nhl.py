@@ -9,9 +9,6 @@ _HEADERS = {
                   'Chrome/50.0.2661.86 Safari/537.36'}
 
 _BASE_URL = 'https://statsapi.web.nhl.com/api/v1'
-SCHEDULE_URL = '/schedule?startDate={from_date}&endDate={to_date}&expand=schedule&site=en_nhl&teamId='
-GAME_URL = '/game/{game_id}/feed/live'
-TEAMS_URL = '/teams'
 
 async def get_teams(session: aiohttp.ClientSession):
     return await _fetch('/teams', session)

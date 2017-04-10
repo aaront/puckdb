@@ -22,7 +22,6 @@ setup(
     package_dir={'puckdb': 'puckdb'},
     license='Apache 2.0',
     install_requires=[
-        'cchardet',
         'aiohttp',
         'asyncpgsa',
         'click',
@@ -30,9 +29,7 @@ setup(
         'python-dateutil',
         'pytz',
         'sqlalchemy',
-        'psycopg2',
-        'ujson',
-        'marshmallow'
+        'ujson'
     ],
     entry_points='''
         [console_scripts]

@@ -21,6 +21,7 @@ def abort_if_false(ctx, param, value):
               prompt='Are you sure you want to init the database?')
 def init():
     db.create()
+    fetcher.get_teams()
 
 
 @click.command(help='Remove all data from the database')
@@ -34,7 +35,7 @@ def drop():
 @click.command()
 @click.option('--from-date', type=DATE_PARAM, default=datetime(2016, 10, 1))
 @click.option('--to-date', type=DATE_PARAM, default=datetime.now())
-def get(from_date, to_date):
+def fetch(from_date, to_date):
     fetcher.get_games(from_date, to_date)
 
 
