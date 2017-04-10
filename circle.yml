@@ -6,6 +6,7 @@ machine:
 
 dependencies:
   override:
+    - pip install .
     - pip install -r dev-requirements.txt
 
 test:
