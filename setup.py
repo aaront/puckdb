@@ -28,6 +28,7 @@ setup(
         'click-datetime',
         'python-dateutil',
         'pytz',
+        'psycopg2',
         'sqlalchemy',
         'ujson'
     ],

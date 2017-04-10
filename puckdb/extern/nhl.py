@@ -15,8 +15,8 @@ async def get_teams(session: aiohttp.ClientSession):
 
 async def get_schedule_games(from_date: datetime, to_date: datetime, session: aiohttp.ClientSession):
     url = '/schedule?startDate={from_date}&endDate={to_date}&expand=schedule&site=en_nhl&teamId='.format(
-        from_date=from_date,
-        to_date=to_date
+        from_date=from_date.strftime('%Y-%m-%d'),
+        to_date=to_date.strftime('%Y-%m-%d')
     )
     schedule = await _fetch(url, session)
     return list(itertools.chain.from_iterable([day['games'] for day in schedule['dates']]))
