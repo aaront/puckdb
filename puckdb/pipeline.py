@@ -1,5 +1,6 @@
 import asyncio
 
+
 class Pipeline(object):
     def __init__(self, workers: int = 5, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
         self.workers = workers

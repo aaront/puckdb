@@ -34,8 +34,8 @@ class GameFetcher(object):
 
     async def work(self, session: aiohttp.ClientSession):
         while True:
-            game_id = await self.q.get()
-            game = await nhl.get_live_data(game_id, session)
+            game_data = await self.q.get()
+            game = await nhl.get_live_data(game_data['gamePk'], session)
             await self._save(game)
             self.q.task_done()
 
@@ -50,7 +50,7 @@ class GameFetcher(object):
             if parsed_event is None:
                 continue
             upserts.append(db.upsert(db.event_tbl, parsed_event, True))
-        await db.execute(upserts, loop=self.loop)
+        # await db.execute(upserts, loop=self.loop)
 
     async def run(self, concurrency: int = 10):
         with aiohttp.ClientSession(loop=self.loop) as session:
