@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 
-from puckdb import db, fetch
+from puckdb import db, fetcher
 
 
 @pytest.fixture(scope='session')
@@ -22,6 +22,6 @@ def loop():
 class TestFetch:
     def test_game_urls(self, database, loop):
         date = datetime(2016, 2, 23)
-        games = fetch.games(date, date, loop=loop)
+        games = fetcher.get_games(date, date, loop=loop)
         # TODO: Look up games from DB
         # assert len(games) == 9

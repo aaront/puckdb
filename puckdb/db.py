@@ -1,6 +1,5 @@
 import abc
 import asyncio
-import enum
 import os
 from typing import List, Optional
 
@@ -10,47 +9,11 @@ from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import Insert
 
+from . import model
+
 metadata = sa.MetaData()
 
 connect_str = os.getenv('PUCKDB_DATABASE', None)
-
-
-class PlayerPosition(enum.Enum):
-    center = 0
-    left_wing = 1
-    right_wing = 2
-    defenseman = 3
-    goalie = 4
-
-
-class GameState(enum.Enum):
-    not_started = -1
-    in_progress = 0
-    finished = 1
-
-
-class EventType(enum.Enum):
-    blocked_shot = 0
-    challenge = 1
-    faceoff = 2
-    giveaway = 3
-    goal = 4
-    hit = 5
-    missed_shot = 6
-    penalty = 7
-    shot = 8
-    stop = 9
-    takeaway = 10
-
-
-class ShotType(enum.Enum):
-    backhand = 0
-    deflected = 1
-    slap = 2
-    snap = 3
-    tip = 4
-    wrap_around = 5
-    wrist = 6
 
 
 game_tbl = sa.Table('game', metadata,
@@ -73,16 +36,16 @@ player_tbl = sa.Table('player', metadata,
     sa.Column('id', sa.Integer, primary_key=True),
     sa.Column('first_name', sa.String),
     sa.Column('last_name', sa.String),
-    sa.Column('position', sa.Enum(PlayerPosition, name='player_position'))
+    sa.Column('position', sa.Enum(model.PlayerPosition, name='player_position'))
 )
 
 event_tbl = sa.Table('event', metadata,
     sa.Column('game', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False, primary_key=True),
     sa.Column('id', sa.Integer, nullable=False, primary_key=True),
     sa.Column('team', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
-    sa.Column('type', sa.Enum(EventType, name='event_type'), nullable=False),
+    sa.Column('type', sa.Enum(model.EventType, name='event_type'), nullable=False),
     sa.Column('date', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('shot_type', sa.Enum(ShotType, name='shot_type')),
+    sa.Column('shot_type', sa.Enum(model.ShotType, name='shot_type')),
     sa.Column('period', sa.SmallInteger, nullable=False)
 )
 
@@ -160,15 +123,15 @@ class Event(DbModel):
         pass
 
     @staticmethod
-    def parse_type(type_str: str) -> Optional[EventType]:
-        for event_type in EventType:
+    def parse_type(type_str: str) -> Optional[model.EventType]:
+        for event_type in model.EventType:
             if event_type.name == type_str.lower():
                 return event_type
         return None
 
     @staticmethod
-    def parse_shot_type(type_str: str) -> Optional[EventType]:
-        for shot_type in ShotType:
+    def parse_shot_type(type_str: str) -> Optional[model.EventType]:
+        for shot_type in model.ShotType:
             if shot_type.name == type_str.lower():
                 return shot_type
         return None
