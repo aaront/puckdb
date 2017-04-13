@@ -25,7 +25,3 @@ class TestFetch:
         games = fetcher.get_games(date, date, loop=loop)
         # TODO: Look up games from DB
         # assert len(games) == 9
-
-    def test_get_teams(self, loop):
-        teams = fetcher.get_teams(loop)
-        # assert len(teams) >= 30

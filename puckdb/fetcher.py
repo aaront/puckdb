@@ -1,5 +1,4 @@
 import asyncio
-import ujson
 from datetime import datetime
 
 import aiohttp
@@ -14,11 +13,6 @@ try:
 except ImportError:
     pass
 
-
-async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
-    with aiohttp.ClientSession(loop=loop) as session:
-        teams = await nhl.get_teams(session)
-    return teams
 
 def get_games(from_date: datetime, to_date: datetime, concurrency: int = 10,
               loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):

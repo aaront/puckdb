@@ -21,6 +21,8 @@ class TeamQuery(BaseQuery):
 
 
 class GameQuery(BaseQuery):
+    min_date = datetime(2013, 1, 1)
+
     def __init__(self, from_date=None, to_date=None, team=None):
         """
 
@@ -32,7 +34,10 @@ class GameQuery(BaseQuery):
         to_date = to_date or datetime.utcnow()
         if from_date and to_date < from_date:
             raise exceptions.FilterException('to_date must be after from_date')
-        self.from_date = from_date
+        if not from_date or from_date < self.min_date:
+            self.from_date = self.min_date
+        else:
+            self.from_date = from_date
         self.to_date = to_date
         self.team = team
 

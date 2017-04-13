@@ -25,3 +25,11 @@ class TestNhl:
         assert len(games) == 9
         assert 'gamePk' in games[0]
         assert games[0]['gamePk'] == 2015020893
+
+    @pytest.mark.asyncio
+    async def test_get_live_data(self, session: aiohttp.ClientSession):
+        live = await nhl.get_live_data(2016021207, session)
+        assert 'gameData' in live
+        assert live['gamePk'] == 2016021207
+        assert live['gameData']['teams']['away']['abbreviation'] == 'NYR'
+        assert live['gameData']['teams']['home']['abbreviation'] == 'OTT'

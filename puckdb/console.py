@@ -21,7 +21,6 @@ def abort_if_false(ctx, param, value):
               prompt='Are you sure you want to init the database?')
 def init():
     db.create()
-    fetcher.get_teams()
 
 
 @click.command(help='Remove all data from the database')
