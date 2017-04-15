@@ -15,8 +15,7 @@ class TestNhl:
     @pytest.mark.asyncio
     async def test_get_teams(self, session: aiohttp.ClientSession):
         teams = await nhl.get_teams(session)
-        assert 'teams' in teams
-        assert len(teams['teams']) >= 30
+        assert len(teams) >= 30
 
     @pytest.mark.asyncio
     async def test_get_schedule_games(self, session: aiohttp.ClientSession):

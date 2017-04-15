@@ -3,10 +3,10 @@ import asyncio
 import os
 from typing import List, Optional
 
-import asyncpgsa
 import sqlalchemy as sa
+from asyncpgsa import pg
 from sqlalchemy import Table
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.sql import Insert
 
 from . import model
@@ -50,13 +50,20 @@ event_tbl = sa.Table('event', metadata,
 )
 
 
-async def execute(command_or_commands: Insert or List[Insert], loop: asyncio.AbstractEventLoop, dsn: str = None):
-    async with asyncpgsa.create_pool(dsn=dsn or connect_str, loop=loop, min_size=5, max_size=10) as pool:
-        async with pool.acquire() as conn:
-            if isinstance(command_or_commands, Insert):
-                command_or_commands = [command_or_commands]
-            for command in command_or_commands:
-                await conn.execute(command)
+async def setup(dsn: str = connect_str, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+    await pg.init(
+        loop=loop,
+        dsn=dsn,
+        min_size=5,
+        max_size=10
+    )
+
+
+async def insert(command_or_commands: Insert or List[Insert]):
+    if not isinstance(command_or_commands, List):
+        command_or_commands = [command_or_commands]
+    for command in command_or_commands:
+        await pg.fetchrow(command)
 
 
 def create(dsn=None):
@@ -71,19 +78,20 @@ def drop(dsn=None):
     metadata.drop_all(engine)
 
 
-def upsert(table: Table, data: dict, update_on_conflict=False):
-    insert_data = insert(table).values(
+async def upsert(table: Table, data: dict, update_on_conflict=False):
+    insert_data = pg_insert(table).values(
         **data
     )
     if update_on_conflict:
-        return insert_data.on_conflict_do_update(
+        upsert_sql = insert_data.on_conflict_do_update(
             constraint=table.primary_key,
             set_=data
         )
     else:
-        return insert_data.on_conflict_do_nothing(
+        upsert_sql = insert_data.on_conflict_do_nothing(
             constraint=table.primary_key
         )
+    await pg.fetchrow(upsert_sql)
 
 
 class DbModel(object):
