@@ -1,6 +1,4 @@
 import asyncio
-import logging
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import aiohttp
@@ -8,12 +6,6 @@ from asyncpgsa import pg
 
 from . import db, parsers
 from .extern import nhl
-
-logging.basicConfig(format='[%(thread)-5d]%(asctime)s: %(message)s')
-logger = logging.getLogger('async')
-logger.setLevel(logging.INFO)
-
-executor = ThreadPoolExecutor(max_workers=10)
 
 
 async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
