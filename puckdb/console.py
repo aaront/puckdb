@@ -1,6 +1,5 @@
 import asyncio
 import sys
-
 from datetime import datetime
 
 import click
@@ -18,6 +17,7 @@ def abort_if_false(ctx, param, value):
 
 def _setup():
     loop.run_until_complete(db.setup(loop=loop))
+
 
 @click.command(help='Initialize the database')
 @click.option('--yes', is_flag=True, callback=abort_if_false,
@@ -43,6 +43,7 @@ def get(from_date, to_date):
     games = loop.run_until_complete(fetch.get_games(from_date=from_date, to_date=to_date, loop=loop))
     click.echo(len(games))
 
+
 @click.group()
 @click.version_option()
 def main():
@@ -50,6 +51,7 @@ def main():
         click.echo('ERROR: `PUCKDB_DATABASE` environment variable not specified.')
         sys.exit(1)
     _setup()
+
 
 main.add_command(get)
 main.add_command(init)

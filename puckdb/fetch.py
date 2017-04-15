@@ -15,12 +15,14 @@ logger.setLevel(logging.INFO)
 
 executor = ThreadPoolExecutor(max_workers=10)
 
+
 async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
                    loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     async with sem:
         async with aiohttp.ClientSession(loop=loop) as session:
             game_data = await nhl.get_live_data(game_id=game_id, session=session)
         return await _save_game(game_data)
+
 
 async def _save_game(game: dict):
     game_data = game['gameData']
@@ -37,6 +39,7 @@ async def _save_game(game: dict):
         await pg.fetchrow(db.event_tbl.insert().values(**ev))
     return game_obj
 
+
 async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     async with aiohttp.ClientSession(loop=loop) as session:
         teams = await nhl.get_teams(session)
@@ -44,6 +47,7 @@ async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     for team in team_objs:
         await db.upsert(db.team_tbl, team)
     return team_objs
+
 
 async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 10,
                     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
@@ -53,4 +57,3 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 1
     results = await asyncio.gather(*[get_game(game['gamePk'], sem=semaphore, loop=loop) for game in schedule],
                                    loop=loop)
     return results
-
