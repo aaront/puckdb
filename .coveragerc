@@ -14,6 +14,7 @@ omit =
     */unittest2/*
     *__init__*
     */tests/*
+    */migrations/*
 
 [report]
 # Regexes for lines to exclude from consideration
