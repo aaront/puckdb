@@ -6,3 +6,4 @@ jedi==0.10.2
 coverage==4.3.4
 pylint==1.7.0
 typed-ast==1.0.3
+alembic==0.9.1
