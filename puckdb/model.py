@@ -1,6 +1,7 @@
 import enum
 from typing import Type
 
+
 class PlayerPosition(enum.Enum):
     center = 0
     left_wing = 1
@@ -44,4 +45,3 @@ def parse_enum(check_enum: Type[enum.Enum], type_str: str):
         if e.name == type_str.lower():
             return e
     return None
-

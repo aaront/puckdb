@@ -1,7 +1,6 @@
 import asyncio
-from typing import List, Optional
+from typing import List
 
-import abc
 import os
 import sqlalchemy as sa
 from asyncpgsa import pg
