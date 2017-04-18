@@ -41,7 +41,7 @@ async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     return team_objs
 
 
-async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 10,
+async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4,
                     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     async with aiohttp.ClientSession(loop=loop) as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)

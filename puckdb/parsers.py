@@ -1,7 +1,7 @@
 import pytz
 from dateutil import parser
 
-from . import db
+from . import model
 
 
 def team(tm: dict):
@@ -47,7 +47,7 @@ def event(gid: int, ev: dict):
         return None
     about = ev['about']
     result = ev['result']
-    event_type = db.Event.parse_type(result['eventTypeId'])
+    event_type = model.parse_enum(model.EventType, 'eventTypeId')
     if event_type is None:
         return None
     ev_data = dict(

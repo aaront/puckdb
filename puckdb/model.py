@@ -1,5 +1,5 @@
 import enum
-
+from typing import Type
 
 class PlayerPosition(enum.Enum):
     center = 0
@@ -37,3 +37,11 @@ class ShotType(enum.Enum):
     tip = 4
     wrap_around = 5
     wrist = 6
+
+
+def parse_enum(check_enum: Type[enum.Enum], type_str: str):
+    for e in check_enum:
+        if e.name == type_str.lower():
+            return e
+    return None
+
