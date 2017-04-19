@@ -12,7 +12,14 @@ from . import model
 
 metadata = sa.MetaData()
 
-connect_str = os.getenv('PUCKDB_DATABASE', None)
+pg_host = os.getenv('PUCKDB_DB_HOST', 'localhost')
+pg_port = int(os.getenv('PUCKDB_DB_PORT', '5432'))
+pg_database = os.getenv('PUCKDB_DB_DATABASE', 'puckdb')
+pg_user = os.getenv('PUCKDB_DB_USER', '')
+pg_pass = os.getenv('PUCKDB_DB_PASSWORD', '')
+
+connect_str = 'postgres://{user}:{passwd}@{host}:{port}/{database}'.format(user=pg_user, passwd=pg_pass, host=pg_host,
+                                                                             port=pg_port, database=pg_database)
 
 game_tbl = sa.Table('game', metadata,
                     sa.Column('id', sa.BigInteger, primary_key=True),
@@ -51,7 +58,11 @@ event_tbl = sa.Table('event', metadata,
 async def setup(dsn: str = connect_str, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     await pg.init(
         loop=loop,
-        dsn=dsn,
+        host=pg_host,
+        port=pg_port,
+        database=pg_database,
+        user=pg_user,
+        password=pg_pass,
         min_size=5,
         max_size=10
     )

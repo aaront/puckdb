@@ -2,7 +2,10 @@ machine:
   python:
     version: 3.5.2
   environment:
-    PUCKDB_DATABASE: postgres://ubuntu:@127.0.0.1:5432/circle_test
+    PUCKDB_DB_HOST: 127.0.0.1
+    PUCKDB_DB_PORT: 5432
+    PUCKDB_DB_DATABASE: circle_test
+    PUCKDB_DB_USER: ubuntu
 
 dependencies:
   override:
