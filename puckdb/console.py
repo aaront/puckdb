@@ -9,7 +9,6 @@ from puckdb import db, fetch
 
 DATE_PARAM = click_datetime.Datetime(format='%Y-%m-%d')
 
-
 def abort_if_false(ctx, param, value):
     if not value:
         ctx.abort()
