@@ -68,4 +68,4 @@ def event(game_id: int, event_json: dict):
 
 
 def _parse_iso_date(date_str: str):
-    return datetime.strptime(date_str, iso_date_format).astimezone(pytz.utc)
+    return pytz.utc.localize(datetime.strptime(date_str, iso_date_format))
