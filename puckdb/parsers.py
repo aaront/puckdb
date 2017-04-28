@@ -1,7 +1,10 @@
+from datetime import datetime
+
 import pytz
-from dateutil import parser
 
 from . import model
+
+iso_date_format = '%Y-%m-%dT%H:%M:%SZ'
 
 
 def team(team_json: dict) -> model.Team:
@@ -36,10 +39,10 @@ def game(game_json: dict):
         id=int(game_json['gamePk']),
         away=int(away_team['id']),
         home=int(home_team['id']),
-        date_start=parser.parse(game_datetime['dateTime']).astimezone(pytz.utc)
+        date_start=_parse_iso_date(game_datetime['dateTime'])
     )
     if 'endDateTime' in game_datetime:
-        data['date_end'] = parser.parse(game_datetime['endDateTime']).astimezone(pytz.utc)
+        data['date_end'] = _parse_iso_date(game_datetime['endDateTime'])
     return data
 
 
@@ -56,9 +59,13 @@ def event(game_id: int, event_json: dict):
         id=about['eventId'],
         team=event_json['team']['id'],
         type=event_type.name,
-        date=parser.parse(about['dateTime']).astimezone(pytz.utc),
+        date=_parse_iso_date(about['dateTime']),
         period=about['period']
     )
     # if event_type is db.EventType.shot and 'secondaryType' in result:
     #     ev_data['shot_type'] = db.Event.parse_shot_type(result['secondaryType']).value
     return ev_data
+
+
+def _parse_iso_date(date_str: str):
+    return datetime.strptime(date_str, iso_date_format).astimezone(pytz.utc)
