@@ -1,7 +1,7 @@
+from collections import namedtuple
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from collections import namedtuple
 from dateutil import rrule
 
 from . import exceptions

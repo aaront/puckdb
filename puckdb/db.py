@@ -1,7 +1,7 @@
 import asyncio
+import os
 from typing import List
 
-import os
 import sqlalchemy as sa
 from asyncpgsa import pg
 from sqlalchemy import Table
@@ -19,7 +19,7 @@ pg_user = os.getenv('PUCKDB_DB_USER', '')
 pg_pass = os.getenv('PUCKDB_DB_PASSWORD', '')
 
 connect_str = 'postgres://{user}:{passwd}@{host}:{port}/{database}'.format(user=pg_user, passwd=pg_pass, host=pg_host,
-                                                                             port=pg_port, database=pg_database)
+                                                                           port=pg_port, database=pg_database)
 
 game_tbl = sa.Table('game', metadata,
                     sa.Column('id', sa.BigInteger, primary_key=True),
@@ -55,7 +55,7 @@ event_tbl = sa.Table('event', metadata,
                      )
 
 
-async def setup(dsn: str = connect_str, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+async def setup(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     await pg.init(
         loop=loop,
         host=pg_host,

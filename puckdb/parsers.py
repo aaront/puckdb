@@ -4,27 +4,28 @@ from dateutil import parser
 from . import model
 
 
-def team(tm: dict):
-    return dict(
-        id=int(tm['id']),
-        name=tm['name'],
-        team_name=tm['teamName'],
-        abbreviation=tm['abbreviation'],
-        city=tm['locationName']
+def team(team_json: dict) -> model.Team:
+    return model.Team(
+        id=int(team_json['id']),
+        name=team_json['name'],
+        team_name=team_json['teamName'],
+        abbreviation=team_json['abbreviation'],
+        city=team_json['locationName']
     )
 
 
-def player(pl: dict):
-    return dict(
-        id=int(pl['id']),
-        first_name=pl['firstName'],
-        last_name=pl['lastName'],
-        position=pl['primaryPosition']['name'].replace(' ', '_').lower()
+def player(player_json: dict) -> model.Player:
+    pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
+    return model.Player(
+        id=int(player_json['id']),
+        first_name=player_json['firstName'],
+        last_name=player_json['lastName'],
+        position=model.parse_enum(model.PlayerPosition, pos)
     )
 
 
-def game(gm: dict):
-    game_data = gm['gameData']
+def game(game_json: dict):
+    game_data = game_json['gameData']
     game_datetime = game_data['datetime']
     for type, team in game_data['teams'].items():
         if type == 'home':
@@ -32,7 +33,7 @@ def game(gm: dict):
         else:
             away_team = team
     data = dict(
-        id=int(gm['gamePk']),
+        id=int(game_json['gamePk']),
         away=int(away_team['id']),
         home=int(home_team['id']),
         date_start=parser.parse(game_datetime['dateTime']).astimezone(pytz.utc)
@@ -42,18 +43,18 @@ def game(gm: dict):
     return data
 
 
-def event(gid: int, ev: dict):
-    if 'team' not in ev:
+def event(game_id: int, event_json: dict):
+    if 'team' not in event_json:
         return None
-    about = ev['about']
-    result = ev['result']
+    about = event_json['about']
+    result = event_json['result']
     event_type = model.parse_enum(model.EventType, 'eventTypeId')
     if event_type is None:
         return None
     ev_data = dict(
-        game=gid,
+        game=game_id,
         id=about['eventId'],
-        team=ev['team']['id'],
+        team=event_json['team']['id'],
         type=event_type.name,
         date=parser.parse(about['dateTime']).astimezone(pytz.utc),
         period=about['period']
