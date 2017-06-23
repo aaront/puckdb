@@ -60,8 +60,9 @@ docs/_build/
 # PyBuilder
 target/
 
-
-
 # IDEs
 .idea/
-.vscode
+.vscode/.ropeproject
+
+# env
+.env

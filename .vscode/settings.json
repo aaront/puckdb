@@ -1,0 +1,10 @@
+{
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.unitTest.pyTestEnabled": true,
+    "files.exclude": {
+        "**/*.pyc": { "when": "$(basename).py"},
+        "**/*.egg-info": true,
+        "**/__pycache__": true  
+    }
+}

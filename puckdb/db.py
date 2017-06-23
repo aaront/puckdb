@@ -4,6 +4,7 @@ from typing import List
 
 import sqlalchemy as sa
 from asyncpgsa import pg
+from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.sql import Insert
@@ -12,11 +13,13 @@ from . import model
 
 metadata = sa.MetaData()
 
-pg_host = os.getenv('PUCKDB_DB_HOST', 'localhost')
-pg_port = int(os.getenv('PUCKDB_DB_PORT', '5432'))
-pg_database = os.getenv('PUCKDB_DB_DATABASE', 'puckdb')
-pg_user = os.getenv('PUCKDB_DB_USER', '')
-pg_pass = os.getenv('PUCKDB_DB_PASSWORD', '')
+load_dotenv(find_dotenv())
+
+pg_host = os.getenv('PUCKDB_DB_HOST')
+pg_port = int(os.getenv('PUCKDB_DB_PORT'))
+pg_database = os.getenv('PUCKDB_DB_DATABASE')
+pg_user = os.getenv('PUCKDB_DB_USER')
+pg_pass = os.getenv('PUCKDB_DB_PASSWORD')
 
 connect_str = 'postgres://{user}:{passwd}@{host}:{port}/{database}'.format(user=pg_user, passwd=pg_pass, host=pg_host,
                                                                            port=pg_port, database=pg_database)

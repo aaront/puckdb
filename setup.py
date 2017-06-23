@@ -32,7 +32,8 @@ setup(
         'sqlalchemy',
         'ujson',
         'marshmallow',
-        'marshmallow-enum'
+        'marshmallow-enum',
+        'python-dotenv'
     ],
     entry_points='''
         [console_scripts]
