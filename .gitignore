@@ -62,7 +62,10 @@ target/
 
 # IDEs
 .idea/
+.vscode/tags
 .vscode/.ropeproject
+.mypy_cache
+docs/_build/
 
 # env
 .env
