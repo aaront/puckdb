@@ -77,11 +77,20 @@ class PlayerSchema(Schema):
 
 
 class Game:
-    def __init__(self, id: id, home: Team, away: Team, start_date: datetime):
+    def __init__(self, id: id, home: Team, away: Team, start_date: datetime, end_date: datetime = None):
         self.id = id
         self.home = home
         self.away = away
         self.start_date = start_date
+        self.end_date = end_date
+
+
+class GameSchema(Schema):
+    id = fields.Integer()
+    home = fields.Nested(TeamSchema)
+    away = fields.Nested(TeamSchema)
+    start_date = fields.DateTime()
+    end_date = fields.DateTime()
 
 
 class Event:
@@ -92,6 +101,15 @@ class Event:
         self.type = type
         self.date = date
         self.period = period
+
+
+class EventSchema(Schema):
+    id = fields.Integer()
+    game = fields.Nested(GameSchema)
+    team = fields.Nested(TeamSchema)
+    type = EnumField(EventType)
+    date = fields.DateTime()
+    period = fields.Integer()
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):

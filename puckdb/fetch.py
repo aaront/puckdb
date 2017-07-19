@@ -9,6 +9,7 @@ from .extern import nhl
 
 player_schema = model.PlayerSchema()
 team_schema = model.TeamSchema()
+game_schema = model.GameSchema()
 
 
 async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
@@ -19,10 +20,10 @@ async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
         return await _save_game(game_data)
 
 
-async def _save_game(game: dict):
+async def _save_game(game: dict) -> dict:
     game_data = game['gameData']
     game_id = game['gamePk']
-    game_obj = parsers.game(game)
+    game_obj = game_schema.dump(parsers.game(game)).data
     for _, player in game_data['players'].items():
         await db.upsert(db.player_tbl, player_schema.dump(parsers.player(player)).data, True)
     await db.upsert(db.game_tbl, game_obj, True)

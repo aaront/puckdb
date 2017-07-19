@@ -27,23 +27,23 @@ def player(player_json: dict) -> model.Player:
     )
 
 
-def game(game_json: dict):
+def game(game_json: dict) -> model.Game:
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
-    for type, team in game_data['teams'].items():
-        if type == 'home':
-            home_team = team
+    for team_type, team_obj in game_data['teams'].items():
+        if team_type == 'home':
+            home_team = team_obj
         else:
-            away_team = team
-    data = dict(
+            away_team = team_obj
+    game_obj = model.Game(
         id=int(game_json['gamePk']),
-        away=int(away_team['id']),
-        home=int(home_team['id']),
-        date_start=_parse_iso_date(game_datetime['dateTime'])
+        home=dict(id=int(home_team['id'])),
+        away=dict(id=int(away_team['id'])),
+        start_date=_parse_iso_date(game_datetime['dateTime']),
     )
     if 'endDateTime' in game_datetime:
-        data['date_end'] = _parse_iso_date(game_datetime['endDateTime'])
-    return data
+        game_obj.end_date = _parse_iso_date(game_datetime['endDateTime'])
+    return game_obj
 
 
 def event(game_id: int, event_json: dict):
