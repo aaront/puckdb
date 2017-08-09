@@ -56,10 +56,8 @@ event_tbl = sa.Table('event', metadata,
                      )
 
 
-async def setup(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop(),
-                database: str = None):
+async def setup(database: str = None):
     await pg.init(
-        loop=loop,
         host=pg_host,
         port=pg_port,
         database=database or pg_database,
