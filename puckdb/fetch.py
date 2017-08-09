@@ -50,6 +50,6 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
     async with aiohttp.ClientSession(loop=loop) as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)
     semaphore = asyncio.Semaphore(concurrency)
-    results = await asyncio.gather(*[get_game(game['gamePk'], sem=semaphore, loop=loop) for game in schedule],
-                                   loop=loop)
+    futures = [get_game(game['gamePk'], sem=semaphore, loop=loop) for game in schedule]
+    results = await asyncio.gather(*futures, loop=loop)
     return results

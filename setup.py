@@ -23,6 +23,7 @@ setup(
     license='Apache 2.0',
     install_requires=[
         'aiohttp',
+        'aiodns',
         'asyncpgsa',
         'click',
         'click-datetime',

@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import List
+from typing import List, Union
 
 import sqlalchemy as sa
 from asyncpgsa import pg
@@ -71,7 +71,7 @@ async def setup(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     )
 
 
-async def insert(command_or_commands: Insert or List[Insert]):
+async def insert(command_or_commands: Union[Insert, List[Insert]]):
     if not isinstance(command_or_commands, List):
         command_or_commands = [command_or_commands]
     for command in command_or_commands:
