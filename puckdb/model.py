@@ -1,9 +1,5 @@
 import enum
-from datetime import datetime
 from typing import Type
-
-from marshmallow import Schema, fields
-from marshmallow_enum import EnumField
 
 
 class PlayerPosition(enum.Enum):
@@ -42,74 +38,6 @@ class ShotType(enum.Enum):
     tip = 4
     wrap_around = 5
     wrist = 6
-
-
-class Team:
-    def __init__(self, id: int, name: str, team_name: str, abbreviation: str, city: str):
-        self.id = id
-        self.name = name
-        self.team_name = team_name
-        self.abbreviation = abbreviation
-        self.city = city
-
-
-class TeamSchema(Schema):
-    id = fields.Integer()
-    name = fields.String()
-    team_name = fields.String()
-    abbreviation = fields.String()
-    city = fields.String()
-
-
-class Player:
-    def __init__(self, id: int, first_name: str, last_name: str, position: PlayerPosition):
-        self.id = id
-        self.first_name = first_name
-        self.last_name = last_name
-        self.position = position
-
-
-class PlayerSchema(Schema):
-    id = fields.Integer()
-    first_name = fields.String()
-    last_name = fields.String()
-    position = EnumField(PlayerPosition)
-
-
-class Game:
-    def __init__(self, id: id, home: Team, away: Team, start_date: datetime, end_date: datetime = None):
-        self.id = id
-        self.home = home
-        self.away = away
-        self.start_date = start_date
-        self.end_date = end_date
-
-
-class GameSchema(Schema):
-    id = fields.Integer()
-    home = fields.Nested(TeamSchema)
-    away = fields.Nested(TeamSchema)
-    start_date = fields.DateTime()
-    end_date = fields.DateTime()
-
-
-class Event:
-    def __init__(self, id: int, game: Game, team: Team, type: EventType, date: datetime, period: int):
-        self.id = id
-        self.game = game
-        self.team = team
-        self.type = type
-        self.date = date
-        self.period = period
-
-
-class EventSchema(Schema):
-    id = fields.Integer()
-    game = fields.Nested(GameSchema)
-    team = fields.Nested(TeamSchema)
-    type = EnumField(EventType)
-    date = fields.DateTime()
-    period = fields.Integer()
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):
