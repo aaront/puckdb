@@ -9,7 +9,8 @@
         "**/.tox": true,
         "**/build": true,
         "**/.cache": true,
-        "**/.mypy_cache": true
+        "**/.mypy_cache": true,
+        "**/.idea": true
     },
     "python.linting.flake8Enabled": true
 }
