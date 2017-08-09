@@ -1,4 +1,6 @@
 import asyncio
+import os
+import uuid
 from datetime import datetime
 
 import pytest
@@ -8,9 +10,10 @@ from puckdb import db, fetch
 
 @pytest.fixture(scope='function')
 def database(event_loop: asyncio.AbstractEventLoop):
-    event_loop.run_until_complete(db.setup(loop=event_loop))
-    yield db.create()
-    db.drop()
+    db_name = os.getenv('PUCKDB_DB_TEST_DATABASE', os.getenv('PUCKDB_DB_DATABASE'))
+    event_loop.run_until_complete(db.setup(loop=event_loop, database=db_name))
+    yield db.create(database=db_name)
+    db.drop(database=db_name)
 
 
 @pytest.fixture(scope='function')

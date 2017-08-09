@@ -21,8 +21,6 @@ pg_database = os.getenv('PUCKDB_DB_DATABASE')
 pg_user = os.getenv('PUCKDB_DB_USER')
 pg_pass = os.getenv('PUCKDB_DB_PASSWORD')
 
-connect_str = 'postgres://{user}:{passwd}@{host}:{port}/{database}'.format(user=pg_user, passwd=pg_pass, host=pg_host,
-                                                                           port=pg_port, database=pg_database)
 
 game_tbl = sa.Table('game', metadata,
                     sa.Column('id', sa.BigInteger, primary_key=True),
@@ -58,12 +56,13 @@ event_tbl = sa.Table('event', metadata,
                      )
 
 
-async def setup(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+async def setup(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop(),
+                database: str = None):
     await pg.init(
         loop=loop,
         host=pg_host,
         port=pg_port,
-        database=pg_database,
+        database=database or pg_database,
         user=pg_user,
         password=pg_pass,
         min_size=5,
@@ -78,15 +77,15 @@ async def insert(command_or_commands: Union[Insert, List[Insert]]):
         await pg.fetchrow(command)
 
 
-def create(dsn=None):
-    engine = sa.create_engine(dsn or connect_str)
+def create(database: str = None):
+    engine = sa.create_engine(_get_connection_str(database))
     metadata.drop_all(engine)
     metadata.create_all(engine)
     return engine
 
 
-def drop(dsn=None):
-    engine = sa.create_engine(dsn or connect_str)
+def drop(database: str = None):
+    engine = sa.create_engine(_get_connection_str(database))
     metadata.drop_all(engine)
 
 
@@ -104,3 +103,7 @@ async def upsert(table: Table, data: dict, update_on_conflict=False):
             constraint=table.primary_key
         )
     await pg.fetchrow(upsert_sql)
+
+
+def _get_connection_str(database: str = None):
+    return 'postgresql://{}:{}@{}:{}/{}'.format(pg_user, pg_pass, pg_host, pg_port, database or pg_database)

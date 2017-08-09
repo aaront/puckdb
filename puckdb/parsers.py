@@ -7,8 +7,8 @@ from . import model
 iso_date_format = '%Y-%m-%dT%H:%M:%SZ'
 
 
-def team(team_json: dict) -> model.Team:
-    return model.Team(
+def team(team_json: dict) -> dict:
+    return dict(
         id=int(team_json['id']),
         name=team_json['name'],
         team_name=team_json['teamName'],
@@ -17,13 +17,13 @@ def team(team_json: dict) -> model.Team:
     )
 
 
-def player(player_json: dict) -> model.Player:
+def player(player_json: dict) -> dict:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
-    return model.Player(
+    return dict(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
-        position=model.parse_enum(model.PlayerPosition, pos)
+        position=model.parse_enum(model.PlayerPosition, pos).name
     )
 
 

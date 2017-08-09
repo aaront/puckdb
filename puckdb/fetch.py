@@ -7,9 +7,6 @@ from asyncpgsa import pg
 from . import db, parsers, model
 from .extern import nhl
 
-player_schema = model.PlayerSchema()
-team_schema = model.TeamSchema()
-
 
 async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
                    loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
@@ -24,7 +21,7 @@ async def _save_game(game: dict):
     game_id = game['gamePk']
     game_obj = parsers.game(game)
     for _, player in game_data['players'].items():
-        await db.upsert(db.player_tbl, player_schema.dump(parsers.player(player)).data, True)
+        await db.upsert(db.player_tbl, parsers.player(player), True)
     await db.upsert(db.game_tbl, game_obj, True)
     await pg.fetchrow(db.event_tbl.delete().where(db.event_tbl.c.game == game_id))
     for event in game['liveData']['plays']['allPlays']:
@@ -38,7 +35,7 @@ async def _save_game(game: dict):
 async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     async with aiohttp.ClientSession(loop=loop) as session:
         teams = await nhl.get_teams(session)
-    team_objs = [team_schema.dump(parsers.team(team)).data for team in teams]
+    team_objs = [parsers.team(team) for team in teams]
     for team in team_objs:
         await db.upsert(db.team_tbl, team)
     return team_objs

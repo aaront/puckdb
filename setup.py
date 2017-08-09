@@ -24,7 +24,7 @@ setup(
     install_requires=[
         'aiohttp',
         'aiodns',
-        'asyncpgsa',
+        'asyncpgsa==0.13.0',
         'click',
         'click-datetime',
         'python-dateutil',
@@ -32,8 +32,6 @@ setup(
         'psycopg2',
         'sqlalchemy',
         'ujson',
-        'marshmallow',
-        'marshmallow-enum',
         'python-dotenv'
     ],
     entry_points='''
