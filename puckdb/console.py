@@ -18,7 +18,7 @@ def abort_if_false(ctx, param, value):
 
 
 def _setup():
-    loop.run_until_complete(db.setup(loop=loop))
+    loop.run_until_complete(db.setup())
 
 
 @click.command(help='Initialize the database')
@@ -27,7 +27,7 @@ def _setup():
               prompt='Are you sure you want to init the database?')
 def init():
     db.create()
-    loop.run_until_complete(fetch.get_teams(loop=loop))
+    loop.run_until_complete(fetch.get_teams())
 
 
 @click.command(help='Remove all data from the database')
@@ -43,7 +43,7 @@ def drop():
 @click.option('--to-date', type=DATE_PARAM, default=datetime.now())
 def get(from_date, to_date):
     try:
-        games = loop.run_until_complete(fetch.get_games(from_date=from_date, to_date=to_date, loop=loop))
+        games = loop.run_until_complete(fetch.get_games(from_date=from_date, to_date=to_date))
         click.echo(len(games))
     except asyncpg.exceptions.UndefinedTableError:
         click.echo('ERROR: Please run `puckdb init` to initialize this DB first.')

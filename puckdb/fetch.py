@@ -8,10 +8,9 @@ from . import db, parsers, model
 from .extern import nhl
 
 
-async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore(),
-                   loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
+async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore()):
     async with sem:
-        async with aiohttp.ClientSession(loop=loop) as session:
+        async with aiohttp.ClientSession() as session:
             game_data = await nhl.get_live_data(game_id=game_id, session=session)
         return await _save_game(game_data)
 
@@ -32,8 +31,8 @@ async def _save_game(game: dict):
     return game_obj
 
 
-async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
-    async with aiohttp.ClientSession(loop=loop) as session:
+async def get_teams():
+    async with aiohttp.ClientSession() as session:
         teams = await nhl.get_teams(session)
     team_objs = [parsers.team(team) for team in teams]
     for team in team_objs:
@@ -41,11 +40,10 @@ async def get_teams(loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
     return team_objs
 
 
-async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4,
-                    loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
-    async with aiohttp.ClientSession(loop=loop) as session:
+async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4):
+    async with aiohttp.ClientSession() as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)
     semaphore = asyncio.Semaphore(concurrency)
-    futures = [get_game(game['gamePk'], sem=semaphore, loop=loop) for game in schedule]
-    results = await asyncio.gather(*futures, loop=loop)
+    futures = [get_game(game['gamePk'], sem=semaphore) for game in schedule]
+    results = await asyncio.gather(*futures)
     return results
