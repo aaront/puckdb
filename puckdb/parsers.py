@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import pytz
@@ -51,7 +52,7 @@ def event(game_id: int, event_json: dict):
         return None
     about = event_json['about']
     result = event_json['result']
-    event_type = model.parse_enum(model.EventType, 'eventTypeId')
+    event_type = model.parse_enum(model.EventType, result['eventTypeId'])
     if event_type is None:
         return None
     ev_data = dict(
@@ -62,10 +63,23 @@ def event(game_id: int, event_json: dict):
         date=_parse_iso_date(about['dateTime']),
         period=about['period']
     )
-    # if event_type is db.EventType.shot and 'secondaryType' in result:
-    #     ev_data['shot_type'] = db.Event.parse_shot_type(result['secondaryType']).value
+    if event_type is model.EventType.shot and 'secondaryType' in result:
+        ev_data['shot_type'] = _parse_shot_type(result['secondaryType']).name
     return ev_data
 
 
-def _parse_iso_date(date_str: str):
+shot_sep = re.compile(r'(\w+)[\s|-]*')
+
+
+def _parse_shot_type(shot_type: str) -> model.ShotType:
+    shot = shot_sep.match(shot_type).group(1).lower()
+    try:
+        return model.parse_enum(model.ShotType, shot)
+    except ValueError:
+        if shot == 'wrap':
+            return model.ShotType.wrap_around
+    raise ValueError('\'{}\' is not parseable'.format(shot_type))
+
+
+def _parse_iso_date(date_str: str) -> datetime:
     return pytz.utc.localize(datetime.strptime(date_str, iso_date_format))

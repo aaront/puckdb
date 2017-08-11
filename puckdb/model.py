@@ -44,4 +44,4 @@ def parse_enum(check_enum: Type[enum.Enum], type_str: str):
     for e in check_enum:
         if e.name == type_str.lower():
             return e
-    return None
+    raise ValueError('\'{}\' not found in enum'.format(type_str))

@@ -4,14 +4,13 @@ from datetime import datetime
 import aiohttp
 from asyncpgsa import pg
 
-from . import db, parsers, model
+from . import db, parsers
 from .extern import nhl
 
 
-async def get_game(game_id: int, sem: asyncio.Semaphore = asyncio.Semaphore()):
+async def _get_game(game_id: int, session: aiohttp.ClientSession, sem: asyncio.Semaphore = asyncio.Semaphore()):
     async with sem:
-        async with aiohttp.ClientSession() as session:
-            game_data = await nhl.get_live_data(game_id=game_id, session=session)
+        game_data = await nhl.get_live_data(game_id=game_id, session=session)
         return await _save_game(game_data)
 
 
@@ -31,6 +30,11 @@ async def _save_game(game: dict):
     return game_obj
 
 
+async def get_game(game_id: int):
+    async with aiohttp.ClientSession() as session:
+        return await _get_game(game_id, session)
+
+
 async def get_teams():
     async with aiohttp.ClientSession() as session:
         teams = await nhl.get_teams(session)
@@ -41,9 +45,9 @@ async def get_teams():
 
 
 async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4):
+    semaphore = asyncio.Semaphore(concurrency)
     async with aiohttp.ClientSession() as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)
-    semaphore = asyncio.Semaphore(concurrency)
-    futures = [get_game(game['gamePk'], sem=semaphore) for game in schedule]
-    results = await asyncio.gather(*futures)
+        task = [_get_game(game['gamePk'], session=session, sem=semaphore) for game in schedule]
+        results = await asyncio.gather(*task)
     return results
