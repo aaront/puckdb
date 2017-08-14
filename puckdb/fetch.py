@@ -16,17 +16,15 @@ async def _get_game(game_id: int, session: aiohttp.ClientSession, sem: asyncio.S
 
 async def _save_game(game: dict):
     game_data = game['gameData']
-    game_id = game['gamePk']
     game_obj = parsers.game(game)
     for _, player in game_data['players'].items():
         await db.upsert(db.player_tbl, parsers.player(player), True)
     await db.upsert(db.game_tbl, game_obj, True)
-    await pg.fetchrow(db.event_tbl.delete().where(db.event_tbl.c.game == game_id))
     for event in game['liveData']['plays']['allPlays']:
         ev = parsers.event(game['gamePk'], event)
         if ev is None:
             continue
-        await pg.fetchrow(db.event_tbl.insert().values(**ev))
+        await db.upsert(db.event_tbl, ev)
     return game_obj
 
 

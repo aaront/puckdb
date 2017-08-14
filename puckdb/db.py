@@ -68,13 +68,6 @@ async def setup(database: str = None):
     )
 
 
-async def insert(command_or_commands: Union[Insert, List[Insert]]):
-    if not isinstance(command_or_commands, List):
-        command_or_commands = [command_or_commands]
-    for command in command_or_commands:
-        await pg.fetchrow(command)
-
-
 def create(database: str = None):
     engine = sa.create_engine(_get_connection_str(database))
     metadata.drop_all(engine)
