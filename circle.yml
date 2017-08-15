@@ -1,6 +1,6 @@
 machine:
   python:
-    version: 3.5.2
+    version: 3.6.2
   environment:
     PUCKDB_DB_HOST: 127.0.0.1
     PUCKDB_DB_PORT: 5432
