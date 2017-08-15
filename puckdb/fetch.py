@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from typing import List
 
 import aiohttp
 from asyncpgsa import pg
@@ -8,7 +9,7 @@ from . import db, parsers
 from .extern import nhl
 
 
-async def _get_game(game_id: int, session: aiohttp.ClientSession, sem: asyncio.Semaphore = asyncio.Semaphore()):
+async def _download_game(game_id: int, session: aiohttp.ClientSession, sem: asyncio.Semaphore = asyncio.Semaphore()):
     async with sem:
         game_data = await nhl.get_live_data(game_id=game_id, session=session)
         return await _save_game(game_data)
@@ -28,9 +29,16 @@ async def _save_game(game: dict):
     return game_obj
 
 
+async def _get_games(game_ids: List[int]):
+    g = db.game_tbl
+    async with pg.query(g.select(g.c.id.in_(game_ids))) as cur:
+        async for row in cur:
+            yield dict(row)
+
+
 async def get_game(game_id: int):
     async with aiohttp.ClientSession() as session:
-        return await _get_game(game_id, session)
+        return await _download_game(game_id, session)
 
 
 async def get_teams():
@@ -46,6 +54,10 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
     semaphore = asyncio.Semaphore(concurrency)
     async with aiohttp.ClientSession() as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)
-        task = [_get_game(game['gamePk'], session=session, sem=semaphore) for game in schedule]
+        all_game_ids = [game['gamePk'] for game in schedule]
+        existing_games = [g async for g in _get_games(all_game_ids)]
+        need_download = set(all_game_ids) - set([game['id'] for game in existing_games])
+        task = [_download_game(game_id, session=session, sem=semaphore) for game_id in need_download]
         results = await asyncio.gather(*task)
-    return results
+    results.extend(existing_games)
+    return sorted(results, key=lambda k: k['id'])
