@@ -1,4 +1,4 @@
-mypy==0.521
+mypy==0.530
 pytest==3.2.2
 pytest-cov==2.5.1
 pytest-asyncio==0.8.0
