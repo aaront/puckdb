@@ -1,13 +1,10 @@
-import asyncio
 import os
-from typing import List, Union
 
 import sqlalchemy as sa
 from asyncpgsa import pg
 from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.sql import Insert
 
 from . import model
 
@@ -21,13 +18,24 @@ pg_database = os.getenv('PUCKDB_DB_DATABASE')
 pg_user = os.getenv('PUCKDB_DB_USER')
 pg_pass = os.getenv('PUCKDB_DB_PASSWORD')
 
+player_tbl = sa.Table('player', metadata,
+                      sa.Column('id', sa.Integer, primary_key=True),
+                      sa.Column('first_name', sa.String),
+                      sa.Column('last_name', sa.String),
+                      sa.Column('position', sa.Enum(model.PlayerPosition, name='player_position'))
+                      )
 
 game_tbl = sa.Table('game', metadata,
                     sa.Column('id', sa.BigInteger, primary_key=True),
+                    sa.Column('season', sa.Integer, nullable=False),
+                    sa.Column('type', sa.Enum(model.GameType, name='game_type')),
                     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
                     sa.Column('home', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
                     sa.Column('date_start', sa.DateTime(timezone=True), index=True),
-                    sa.Column('date_end', sa.DateTime(timezone=True), nullable=True)
+                    sa.Column('date_end', sa.DateTime(timezone=True), nullable=True),
+                    sa.Column('first_star', sa.Integer, sa.ForeignKey('player.id'), nullable=True),
+                    sa.Column('second_star', sa.Integer, sa.ForeignKey('player.id'), nullable=True),
+                    sa.Column('third_star', sa.Integer, sa.ForeignKey('player.id'), nullable=True)
                     )
 
 team_tbl = sa.Table('team', metadata,
@@ -37,13 +45,6 @@ team_tbl = sa.Table('team', metadata,
                     sa.Column('abbreviation', sa.String),
                     sa.Column('city', sa.String)
                     )
-
-player_tbl = sa.Table('player', metadata,
-                      sa.Column('id', sa.Integer, primary_key=True),
-                      sa.Column('first_name', sa.String),
-                      sa.Column('last_name', sa.String),
-                      sa.Column('position', sa.Enum(model.PlayerPosition, name='player_position'))
-                      )
 
 event_tbl = sa.Table('event', metadata,
                      sa.Column('game', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False, primary_key=True),

@@ -34,8 +34,25 @@ class TestFetch:
     async def test_get_game(self, database_teams):
         live = await fetch.get_game(2016021207)
         assert live['id'] == 2016021207
+        assert live['season'] == 20162017
+        assert live['type'] == 'regular'
         assert live['home'] == 9
         assert live['away'] == 3
+        assert live['first_star'] == 8473544
+        assert live['second_star'] == 8476419
+        assert live['third_star'] == 8474884
+
+    @pytest.mark.asyncio
+    async def test_get_playoff_game(self, database_teams):
+        live = await fetch.get_game(2016030313)
+        assert live['id'] == 2016030313
+        assert live['season'] == 20162017
+        assert live['type'] == 'playoff'
+        assert live['home'] == 9
+        assert live['away'] == 5
+        assert live['first_star'] == 8467950
+        assert live['second_star'] == 8471676
+        assert live['third_star'] == 8470602
 
     @pytest.mark.asyncio
     async def test_get_teams(self, database):

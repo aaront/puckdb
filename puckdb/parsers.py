@@ -31,6 +31,8 @@ def player(player_json: dict) -> dict:
 def game(game_json: dict):
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
+    game_info = game_data['game']
+    live_data = game_json['liveData']
     for type, team in game_data['teams'].items():
         if type == 'home':
             home_team = team
@@ -38,13 +40,28 @@ def game(game_json: dict):
             away_team = team
     data = dict(
         id=int(game_json['gamePk']),
+        season=int(game_info['season']),
+        type=game_type(game_info['type']).name,
         away=int(away_team['id']),
         home=int(home_team['id']),
         date_start=_parse_iso_date(game_datetime['dateTime'])
     )
     if 'endDateTime' in game_datetime:
         data['date_end'] = _parse_iso_date(game_datetime['endDateTime'])
+    if 'decisions' in live_data:
+        decisions = live_data['decisions']
+        data['first_star'] = int(decisions['firstStar']['id'])
+        data['second_star'] = int(decisions['secondStar']['id'])
+        data['third_star'] = int(decisions['thirdStar']['id'])
     return data
+
+
+def game_type(game_type: str) -> model.GameType:
+    if game_type == 'R':
+        return model.GameType.regular
+    elif game_type == 'P':
+        return model.GameType.playoff
+    return None
 
 
 def event(game_id: int, event_json: dict):

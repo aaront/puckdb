@@ -16,6 +16,11 @@ class GameState(enum.Enum):
     finished = 1
 
 
+class GameType(enum.Enum):
+    regular = 0
+    playoff = 1
+
+
 class EventType(enum.Enum):
     blocked_shot = 0
     challenge = 1
