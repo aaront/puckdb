@@ -27,6 +27,7 @@ player_tbl = sa.Table('player', metadata,
 
 game_tbl = sa.Table('game', metadata,
                     sa.Column('id', sa.BigInteger, primary_key=True),
+                    sa.Column('version', sa.BigInteger, primary_key=True),
                     sa.Column('season', sa.Integer, nullable=False),
                     sa.Column('type', sa.Enum(model.GameType, name='game_type')),
                     sa.Column('away', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
@@ -47,13 +48,15 @@ team_tbl = sa.Table('team', metadata,
                     )
 
 event_tbl = sa.Table('event', metadata,
-                     sa.Column('game', sa.BigInteger, sa.ForeignKey('game.id'), nullable=False, primary_key=True),
+                     sa.Column('game', sa.BigInteger, nullable=False, primary_key=True),
+                     sa.Column('version', sa.BigInteger, primary_key=True),
                      sa.Column('id', sa.Integer, nullable=False, primary_key=True),
                      sa.Column('team', sa.SmallInteger, sa.ForeignKey('team.id'), nullable=False),
                      sa.Column('type', sa.Enum(model.EventType, name='event_type'), nullable=False),
                      sa.Column('date', sa.DateTime(timezone=True), nullable=False),
                      sa.Column('shot_type', sa.Enum(model.ShotType, name='shot_type')),
-                     sa.Column('period', sa.SmallInteger, nullable=False)
+                     sa.Column('period', sa.SmallInteger, nullable=False),
+                     sa.ForeignKeyConstraint(['game', 'version'], ['game.id', 'game.version'])
                      )
 
 

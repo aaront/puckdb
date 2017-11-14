@@ -16,13 +16,15 @@ async def _download_game(game_id: int, session: aiohttp.ClientSession, sem: asyn
 
 
 async def _save_game(game: dict):
+    game_id = int(game['gamePk'])
+    game_version = int(game['metaData']['timeStamp'])
     game_data = game['gameData']
-    game_obj = parsers.game(game)
+    game_obj = parsers.game(game_id, game_version, game)
     for _, player in game_data['players'].items():
         await db.upsert(db.player_tbl, parsers.player(player), True)
     await db.upsert(db.game_tbl, game_obj, True)
     for event in game['liveData']['plays']['allPlays']:
-        ev = parsers.event(game['gamePk'], event)
+        ev = parsers.event(game_id, game_version, event)
         if ev is None:
             continue
         await db.upsert(db.event_tbl, ev)

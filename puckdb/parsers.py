@@ -28,7 +28,7 @@ def player(player_json: dict) -> dict:
     )
 
 
-def game(game_json: dict):
+def game(game_id: int, game_version: int, game_json: dict):
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
     game_info = game_data['game']
@@ -39,7 +39,8 @@ def game(game_json: dict):
         else:
             away_team = team
     data = dict(
-        id=int(game_json['gamePk']),
+        id=game_id,
+        version=game_version,
         season=int(game_info['season']),
         type=game_type(game_info['type']).name,
         away=int(away_team['id']),
@@ -64,7 +65,7 @@ def game_type(game_type: str) -> model.GameType:
     return None
 
 
-def event(game_id: int, event_json: dict):
+def event(game_id: int, game_version: int, event_json: dict):
     if 'team' not in event_json:
         return None
     about = event_json['about']
@@ -74,6 +75,7 @@ def event(game_id: int, event_json: dict):
         return None
     ev_data = dict(
         game=game_id,
+        version=game_version,
         id=about['eventId'],
         team=event_json['team']['id'],
         type=event_type.name,
