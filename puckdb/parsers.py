@@ -82,6 +82,10 @@ def event(game_id: int, game_version: int, event_json: dict):
         date=_parse_iso_date(about['dateTime']),
         period=about['period']
     )
+    coordinates = event_json['coordinates']
+    if coordinates and 'x' in coordinates:
+        ev_data['location_x'] = coordinates['x']
+        ev_data['location_y'] = coordinates['y']
     if event_type is model.EventType.shot and 'secondaryType' in result:
         ev_data['shot_type'] = _parse_shot_type(result['secondaryType']).name
     return ev_data

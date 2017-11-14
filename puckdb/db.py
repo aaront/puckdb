@@ -56,6 +56,8 @@ event_tbl = sa.Table('event', metadata,
                      sa.Column('date', sa.DateTime(timezone=True), nullable=False),
                      sa.Column('shot_type', sa.Enum(model.ShotType, name='shot_type')),
                      sa.Column('period', sa.SmallInteger, nullable=False),
+                     sa.Column('location_x', sa.Float, nullable=True),
+                     sa.Column('location_y', sa.Float, nullable=True),
                      sa.ForeignKeyConstraint(['game', 'version'], ['game.id', 'game.version'])
                      )
 
