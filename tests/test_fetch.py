@@ -34,6 +34,7 @@ class TestFetch:
     async def test_get_game(self, database_teams):
         live = await fetch.get_game(2016021207)
         assert live['id'] == 2016021207
+        assert live['version'] == 20170920092415
         assert live['season'] == 20162017
         assert live['type'] == 'regular'
         assert live['home'] == 9
