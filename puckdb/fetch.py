@@ -19,7 +19,7 @@ async def _save_game(game: dict):
     game_id = int(game['gamePk'])
     game_data = game['gameData']
     game_status = game_data['status']['abstractGameState']
-    if game_status is 'Final':
+    if game_status == 'Final':
         game_version = int(game['metaData']['timeStamp'])
     else:
         game_version = -1
