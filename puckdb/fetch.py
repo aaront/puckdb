@@ -17,8 +17,12 @@ async def _download_game(game_id: int, session: aiohttp.ClientSession, sem: asyn
 
 async def _save_game(game: dict):
     game_id = int(game['gamePk'])
-    game_version = int(game['metaData']['timeStamp'])
     game_data = game['gameData']
+    game_status = game_data['status']['abstractGameState']
+    if game_status is 'Final':
+        game_version = int(game['metaData']['timeStamp'])
+    else:
+        game_version = -1
     game_obj = parsers.game(game_id, game_version, game)
     for _, player in game_data['players'].items():
         await db.upsert(db.player_tbl, parsers.player(player), True)
