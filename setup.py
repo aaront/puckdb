@@ -24,7 +24,7 @@ setup(
     install_requires=[
         'aiohttp',
         'aiodns',
-        'asyncpgsa==0.13.0',
+        'asyncpgsa',
         'click',
         'click-datetime',
         'python-dateutil',

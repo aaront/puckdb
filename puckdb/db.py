@@ -1,7 +1,7 @@
 import os
 
 import sqlalchemy as sa
-from asyncpgsa import pg
+from asyncpgsa import pg, create_pool
 from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -74,6 +74,18 @@ async def setup(database: str = None):
     )
 
 
+async def get_pool(database: str = None):
+    return await create_pool(
+        host=pg_host,
+        port=pg_port,
+        database=database or pg_database,
+        user=pg_user,
+        password=pg_pass,
+        min_size=5,
+        max_size=10
+    )
+
+
 def create(database: str = None):
     engine = sa.create_engine(_get_connection_str(database))
     metadata.drop_all(engine)
@@ -86,20 +98,18 @@ def drop(database: str = None):
     metadata.drop_all(engine)
 
 
-async def upsert(table: Table, data: dict, update_on_conflict=False):
+def upsert(table: Table, data: dict, update_on_conflict=False):
     insert_data = pg_insert(table).values(
         **data
     )
     if update_on_conflict:
-        upsert_sql = insert_data.on_conflict_do_update(
+        return insert_data.on_conflict_do_update(
             constraint=table.primary_key,
             set_=data
         )
-    else:
-        upsert_sql = insert_data.on_conflict_do_nothing(
-            constraint=table.primary_key
-        )
-    await pg.fetchrow(upsert_sql)
+    return insert_data.on_conflict_do_nothing(
+        constraint=table.primary_key
+    )
 
 
 def _get_connection_str(database: str = None):
