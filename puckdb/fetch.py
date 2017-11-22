@@ -9,13 +9,22 @@ from . import db, parsers
 from .extern import nhl
 
 
-async def _download_game(game_id: int, session: aiohttp.ClientSession, pool: Pool = db.get_pool(), sem: asyncio.Semaphore = asyncio.Semaphore()):
+async def _get_pool(pool: Pool = None) -> Pool:
+    if pool:
+        # already awaited
+        return pool
+    return await db.get_pool()
+
+
+async def _download_game(game_id: int, session: aiohttp.ClientSession, pool: Pool = None, sem: asyncio.Semaphore = asyncio.Semaphore()):
+    pool = await _get_pool(pool)
     async with sem:
         game_data = await nhl.get_live_data(game_id=game_id, session=session)
         return await _save_game(game_data, pool=pool)
 
 
-async def _save_game(game: dict, pool: Pool = db.get_pool()):
+async def _save_game(game: dict, pool: Pool = None):
+    pool = await _get_pool(pool)
     async with pool.transaction() as conn:
         game_id = int(game['gamePk'])
         game_data = game['gameData']
@@ -36,19 +45,22 @@ async def _save_game(game: dict, pool: Pool = db.get_pool()):
     return game_obj
 
 
-async def _get_games(game_ids: List[int], pool: Pool = db.get_pool()):
+async def _get_games(game_ids: List[int], pool: Pool = None):
+    pool = await _get_pool(pool)
     g = db.game_tbl
     async with pool.acquire() as conn:
         for row in await conn.fetch(g.select(g.c.id.in_(game_ids))):
             yield dict(row)
 
 
-async def get_game(game_id: int, pool: Pool = db.get_pool()):
+async def get_game(game_id: int, pool: Pool = None):
+    pool = await _get_pool(pool)
     async with aiohttp.ClientSession() as session:
         return await _download_game(game_id, session, pool=pool)
 
 
-async def get_teams(pool: Pool = db.get_pool()):
+async def get_teams(pool: Pool = None):
+    pool = await _get_pool(pool)
     async with aiohttp.ClientSession() as session:
         teams = await nhl.get_teams(session)
     team_objs = [parsers.team(team) for team in teams]
@@ -58,7 +70,8 @@ async def get_teams(pool: Pool = db.get_pool()):
     return team_objs
 
 
-async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4, pool: Pool = db.get_pool()):
+async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4, pool: Pool = None):
+    pool = await _get_pool(pool)
     semaphore = asyncio.Semaphore(concurrency)
     async with aiohttp.ClientSession() as session:
         schedule = await nhl.get_schedule_games(from_date=from_date, to_date=to_date, session=session)

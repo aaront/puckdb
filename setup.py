@@ -22,6 +22,8 @@ setup(
     package_dir={'puckdb': 'puckdb'},
     license='Apache 2.0',
     install_requires=[
+        'aiodns',
+        'cchardet',
         'aiohttp',
         'aiodns',
         'asyncpgsa',

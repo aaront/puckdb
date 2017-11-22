@@ -7,7 +7,7 @@ import asyncpg.exceptions
 import click
 import click_datetime
 
-from puckdb import db, fetch
+from puckdb import db, fetch, server
 
 DATE_PARAM = click_datetime.Datetime(format='%Y-%m-%d')
 
@@ -53,6 +53,11 @@ def get(from_date, to_date):
         sys.exit(1)
 
 
+@click.command()
+def serve():
+    server.run(loop)
+
+
 @click.group()
 @click.version_option()
 def main():
@@ -65,6 +70,7 @@ def main():
 main.add_command(get)
 main.add_command(init)
 main.add_command(drop)
+main.add_command(serve)
 
 loop = asyncio.get_event_loop()
 
