@@ -1,7 +1,8 @@
-from aiohttp import App
+from aiohttp import web
 
-from .models import game
+from .views import index, game
 
 
-def setup_routes(app: App):
-    app.router.add_get('/')
+def setup_routes(app: web.Application):
+    app.router.add_get('/', index)
+    app.router.add_get('/games', game.index, name='games')

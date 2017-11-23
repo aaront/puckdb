@@ -3,13 +3,13 @@ import asyncio
 from aiohttp import web
 
 from ..db import get_pool
-from .models import index
+from .routes import setup_routes
 
 
 async def init():
     app = web.Application()
     app['pool'] = await get_pool()
-    app.router.add_route('GET', '/', index)
+    setup_routes(app)
     return app
 
 
