@@ -5,7 +5,7 @@ from typing import List
 import aiohttp
 from asyncpg.pool import Pool
 
-from . import db, parsers
+from . import db, parsers, model
 from .extern import nhl
 
 
@@ -63,7 +63,7 @@ async def get_teams(pool: Pool = None):
     pool = await _get_pool(pool)
     async with aiohttp.ClientSession() as session:
         teams = await nhl.get_teams(session)
-    team_objs = [parsers.team(team) for team in teams]
+    team_objs: List[model.Team] = [parsers.team(team) for team in teams]
     async with pool.acquire() as conn:
         for team in team_objs:
             await conn.fetchrow(db.upsert(db.team_tbl, team))

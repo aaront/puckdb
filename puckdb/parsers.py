@@ -8,8 +8,8 @@ from . import model
 iso_date_format = '%Y-%m-%dT%H:%M:%SZ'
 
 
-def team(team_json: dict) -> dict:
-    return dict(
+def team(team_json: dict) -> model.Team:
+    return model.Team(
         id=int(team_json['id']),
         name=team_json['name'],
         team_name=team_json['teamName'],

@@ -34,7 +34,8 @@ setup(
         'psycopg2',
         'sqlalchemy',
         'ujson',
-        'python-dotenv'
+        'python-dotenv',
+        'dataclasses'
     ],
     entry_points='''
         [console_scripts]

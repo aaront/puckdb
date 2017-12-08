@@ -1,6 +1,8 @@
 import enum
 from typing import Type
 
+from dataclasses import dataclass
+
 
 class PlayerPosition(enum.Enum):
     center = 0
@@ -43,6 +45,16 @@ class ShotType(enum.Enum):
     tip = 4
     wrap_around = 5
     wrist = 6
+
+
+@dataclass
+class Team():
+    __slots__ = ['id', 'name', 'team_name', 'abbreviation', 'city']
+    id: int
+    name: str
+    team_name: str
+    abbreviation: str
+    city: str
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):
