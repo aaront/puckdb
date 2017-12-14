@@ -4,6 +4,7 @@ from typing import List
 
 import aiohttp
 from asyncpg.pool import Pool
+from dataclasses import asdict
 
 from . import db, parsers, model
 from .extern import nhl
@@ -66,7 +67,7 @@ async def get_teams(pool: Pool = None):
     team_objs: List[model.Team] = [parsers.team(team) for team in teams]
     async with pool.acquire() as conn:
         for team in team_objs:
-            await conn.fetchrow(db.upsert(db.team_tbl, team))
+            await conn.fetchrow(db.upsert(db.team_tbl, asdict(team)))
     return team_objs
 
 
