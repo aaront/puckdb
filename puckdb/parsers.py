@@ -18,9 +18,9 @@ def team(team_json: dict) -> model.Team:
     )
 
 
-def player(player_json: dict) -> dict:
+def player(player_json: dict) -> model.Player:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
-    return dict(
+    return model.Player(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
@@ -28,7 +28,7 @@ def player(player_json: dict) -> dict:
     )
 
 
-def game(game_id: int, game_version: int, game_json: dict):
+def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
     game_info = game_data['game']
@@ -38,7 +38,7 @@ def game(game_id: int, game_version: int, game_json: dict):
             home_team = team
         else:
             away_team = team
-    data = dict(
+    data = model.Game(
         id=game_id,
         version=game_version,
         season=int(game_info['season']),
@@ -48,12 +48,12 @@ def game(game_id: int, game_version: int, game_json: dict):
         date_start=_parse_iso_date(game_datetime['dateTime'])
     )
     if 'endDateTime' in game_datetime:
-        data['date_end'] = _parse_iso_date(game_datetime['endDateTime'])
+        data.date_end = _parse_iso_date(game_datetime['endDateTime'])
     if 'decisions' in live_data:
         decisions = live_data['decisions']
-        data['first_star'] = int(decisions['firstStar']['id'])
-        data['second_star'] = int(decisions['secondStar']['id'])
-        data['third_star'] = int(decisions['thirdStar']['id'])
+        data.first_star = int(decisions['firstStar']['id'])
+        data.second_star = int(decisions['secondStar']['id'])
+        data.third_star = int(decisions['thirdStar']['id'])
     return data
 
 

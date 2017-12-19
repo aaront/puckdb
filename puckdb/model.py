@@ -1,4 +1,5 @@
 import enum
+from datetime import datetime
 from typing import Type
 
 from dataclasses import dataclass
@@ -55,6 +56,32 @@ class Team():
     team_name: str
     abbreviation: str
     city: str
+
+
+@dataclass
+class Player():
+    __slots__ = ['id', 'first_name', 'last_name', 'position']
+    id: int
+    first_name: str
+    last_name: str
+    position: str
+
+
+@dataclass
+class Game():
+    __slots__ = ['id', 'version', 'season', 'type', 'away', 'home', 'date_start', 'date_end', 'first_star',
+                 'second_star', 'third_star']
+    id: int
+    version: int
+    season: int
+    type: str
+    away: int
+    home: int
+    date_start: datetime
+    date_end: datetime
+    first_star: int
+    second_star: int
+    third_star: int
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):
