@@ -6,9 +6,9 @@ from puckdb.extern import nhl
 
 
 @pytest.fixture(scope='function')
-def session(event_loop):
-    with aiohttp.ClientSession(loop=event_loop) as session:
-        yield session
+async def session(event_loop):
+    async with aiohttp.ClientSession(loop=event_loop) as client_session:
+        yield client_session
 
 
 class TestNhl:
