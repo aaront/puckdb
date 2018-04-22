@@ -78,10 +78,10 @@ class Game():
     away: int
     home: int
     date_start: datetime
-    date_end: datetime
-    first_star: int
-    second_star: int
-    third_star: int
+    date_end: datetime or None
+    first_star: int or None
+    second_star: int or None
+    third_star: int or None
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):

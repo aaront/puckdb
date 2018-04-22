@@ -45,7 +45,11 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
         type=game_type(game_info['type']).name,
         away=int(away_team['id']),
         home=int(home_team['id']),
-        date_start=_parse_iso_date(game_datetime['dateTime'])
+        date_start=_parse_iso_date(game_datetime['dateTime']),
+        date_end=None,
+        first_star=None,
+        second_star=None,
+        third_star=None
     )
     if 'endDateTime' in game_datetime:
         data.date_end = _parse_iso_date(game_datetime['endDateTime'])

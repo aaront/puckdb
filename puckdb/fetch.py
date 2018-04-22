@@ -82,4 +82,4 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
         task = [_download_game(game_id, session=session, sem=semaphore, pool=pool) for game_id in need_download]
         results = await asyncio.gather(*task)
     results.extend(existing_games)
-    return sorted(results, key=lambda k: k['id'])
+    return sorted(results, key=lambda k: k.id)
