@@ -70,3 +70,7 @@ docs/_build/
 # env
 .env
 venvs/
+
+# other
+monkeytype.sqlite3
+.pytest_cache/

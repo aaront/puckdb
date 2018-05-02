@@ -8,6 +8,8 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from . import model
 
+from sqlalchemy.dialects.postgresql.dml import Insert
+
 metadata = sa.MetaData()
 
 load_dotenv(find_dotenv())
@@ -98,7 +100,7 @@ def drop(database: str = None):
     metadata.drop_all(engine)
 
 
-def upsert(table: Table, data: dict, update_on_conflict=False):
+def upsert(table: Table, data: dict, update_on_conflict: bool = False) -> Insert:
     insert_data = pg_insert(table).values(
         **data
     )
