@@ -22,7 +22,7 @@ jobs:
     - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
     - restore_cache:
         keys:
-        - v1-dep-{{ .Branch }}-{{ epoch }}
+        - v1-dep-{{ .Branch }}-{{ .Revision }}
     - run:
         name: Install Dependencies
         command: |
@@ -31,7 +31,7 @@ jobs:
             pip install .
             pip install -r dev-requirements.txt
     - save_cache:
-        key: v1-dep-{{ .Branch }}-{{ epoch }}
+        key: v1-dep-{{ .Branch }}-{{ .Revision }}
         paths:
           - "venv"
     - run:
