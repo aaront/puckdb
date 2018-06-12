@@ -24,7 +24,7 @@ jobs:
         keys:
         - v1-dep-{{ .Branch }}-{{ epoch }}
     - run:
-        name: Install dependencies
+        name: Install Dependencies
         command: |
             python3 -m venv venv
             . venv/bin/activate
