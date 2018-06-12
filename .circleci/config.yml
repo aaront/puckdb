@@ -19,12 +19,14 @@ jobs:
         POSTGRES_DB: circle_test
     steps:
     - checkout
-    - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
+    - run: 
+        name: Creating artifacts directory
+        command: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
     - restore_cache:
         keys:
         - v1-dep-{{ .Branch }}-{{ .Revision }}
     - run:
-        name: Install Dependencies
+        name: Installing Python dependencies
         command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -35,11 +37,13 @@ jobs:
         paths:
           - "venv"
     - run:
-        name: Running Tests
+        name: Running tests
         command: |
           . venv/bin/activate
           py.test --cov-config .coveragerc --cov-report xml:$CIRCLE_TEST_REPORTS/coverage.xml --cov puckdb --junitxml $CIRCLE_TEST_REPORTS/test-results.xml tests/
-    - run: bash <(curl -s https://codecov.io/bash)
+    - run: 
+        name: Uploading code coverage results
+        command: bash <(curl -s https://codecov.io/bash)
     - store_test_results:
         path: /tmp/circleci-test-results
     - store_artifacts:
