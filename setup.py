@@ -35,7 +35,8 @@ setup(
         'sqlalchemy',
         'ujson',
         'python-dotenv',
-        'dataclasses'
+        'dataclasses',
+        'alembic'
     ],
     entry_points='''
         [console_scripts]

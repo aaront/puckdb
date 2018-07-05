@@ -64,6 +64,14 @@ event_tbl = sa.Table('event', metadata,
                      )
 
 
+def get_connect_url():
+    return 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(user=pg_user,
+                                                                            password=pg_pass,
+                                                                            host=pg_host,
+                                                                            port=pg_port,
+                                                                            database=pg_database)
+
+
 async def setup(database: str = None):
     await pg.init(
         host=pg_host,
