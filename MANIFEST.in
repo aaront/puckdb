@@ -1,0 +1,2 @@
+include .env README.rst LICENSE alembic.ini
+recursive-include migrations *

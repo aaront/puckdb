@@ -6,6 +6,8 @@ from datetime import datetime
 import asyncpg.exceptions
 import click
 import click_datetime
+from alembic.command import upgrade
+from alembic.config import Config
 
 from puckdb import db, fetch, server
 
@@ -25,9 +27,11 @@ def _setup():
 @click.option('--yes', is_flag=True, callback=abort_if_false,
               expose_value=False,
               prompt='Are you sure you want to init the database?')
-def init():
-    # db.create()
-    # loop.run_until_complete(fetch.get_teams())
+@click.argument('alembic_config', type=click.Path(exists=True))
+def init(alembic_config):
+    config = Config(alembic_config)
+    upgrade(config, 'head')
+    loop.run_until_complete(fetch.get_teams())
 
 
 @click.command(help='Remove all data from the database')
@@ -35,7 +39,7 @@ def init():
               expose_value=False,
               prompt='Are you sure you want to drop the database?')
 def drop():
-    # db.drop()
+    db.drop()
 
 
 @click.command()

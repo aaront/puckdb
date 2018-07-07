@@ -1,21 +1,20 @@
 import os
 
 import sqlalchemy as sa
-from asyncpgsa import pg, create_pool
-from dotenv import load_dotenv, find_dotenv
+from asyncpgsa import create_pool, pg
+from dotenv import find_dotenv, load_dotenv
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.postgresql.dml import Insert
 
 from . import model
-
-from sqlalchemy.dialects.postgresql.dml import Insert
 
 metadata = sa.MetaData()
 
 load_dotenv(find_dotenv())
 
 pg_host = os.getenv('PUCKDB_DB_HOST')
-pg_port = int(os.getenv('PUCKDB_DB_PORT'))
+pg_port = int(os.getenv('PUCKDB_DB_PORT', '5432'))
 pg_database = os.getenv('PUCKDB_DB_DATABASE')
 pg_user = os.getenv('PUCKDB_DB_USER')
 pg_pass = os.getenv('PUCKDB_DB_PASSWORD')
@@ -100,6 +99,11 @@ def upsert(table: Table, data: dict, update_on_conflict: bool = False) -> Insert
     return insert_data.on_conflict_do_nothing(
         constraint=table.primary_key
     )
+
+
+def drop(database: str = None):
+    engine = sa.create_engine(get_connection_str(database))
+    metadata.drop_all(engine)
 
 
 def get_connection_str(database: str = None) -> str:
