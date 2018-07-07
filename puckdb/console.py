@@ -26,8 +26,8 @@ def _setup():
               expose_value=False,
               prompt='Are you sure you want to init the database?')
 def init():
-    db.create()
-    loop.run_until_complete(fetch.get_teams())
+    # db.create()
+    # loop.run_until_complete(fetch.get_teams())
 
 
 @click.command(help='Remove all data from the database')
@@ -35,7 +35,7 @@ def init():
               expose_value=False,
               prompt='Are you sure you want to drop the database?')
 def drop():
-    db.drop()
+    # db.drop()
 
 
 @click.command()

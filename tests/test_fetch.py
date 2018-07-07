@@ -4,9 +4,11 @@ import uuid
 from datetime import datetime
 
 import pytest
+import sqlalchemy as sa
 from asyncpg.pool import Pool
 
 from puckdb import db, fetch
+from puckdb.db import get_connection_str, metadata
 
 db_name = os.getenv('PUCKDB_DB_TEST_DATABASE', os.getenv('PUCKDB_DB_DATABASE'))
 
@@ -18,8 +20,11 @@ async def pool():
 
 @pytest.fixture(scope='function')
 def database(event_loop: asyncio.AbstractEventLoop, pool: Pool):
-    yield db.create(database=db_name)
-    db.drop(database=db_name)
+    engine = sa.create_engine(get_connection_str(db_name))
+    metadata.drop_all(engine)
+    metadata.create_all(engine)
+    yield engine
+    metadata.drop_all(engine)
 
 
 @pytest.fixture(scope='function')
@@ -66,5 +71,3 @@ class TestFetch:
         teams = await fetch.get_teams(pool=pool)
         assert teams is not None
         assert len(teams) >= 30
-
-

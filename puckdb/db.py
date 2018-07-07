@@ -64,14 +64,6 @@ event_tbl = sa.Table('event', metadata,
                      )
 
 
-def get_connect_url():
-    return 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(user=pg_user,
-                                                                            password=pg_pass,
-                                                                            host=pg_host,
-                                                                            port=pg_port,
-                                                                            database=pg_database)
-
-
 async def setup(database: str = None):
     await pg.init(
         host=pg_host,
@@ -96,18 +88,6 @@ async def get_pool(database: str = None):
     )
 
 
-def create(database: str = None):
-    engine = sa.create_engine(_get_connection_str(database))
-    metadata.drop_all(engine)
-    metadata.create_all(engine)
-    return engine
-
-
-def drop(database: str = None):
-    engine = sa.create_engine(_get_connection_str(database))
-    metadata.drop_all(engine)
-
-
 def upsert(table: Table, data: dict, update_on_conflict: bool = False) -> Insert:
     insert_data = pg_insert(table).values(
         **data
@@ -122,5 +102,9 @@ def upsert(table: Table, data: dict, update_on_conflict: bool = False) -> Insert
     )
 
 
-def _get_connection_str(database: str = None):
-    return 'postgresql://{}:{}@{}:{}/{}'.format(pg_user, pg_pass, pg_host, pg_port, database or pg_database)
+def get_connection_str(database: str = None) -> str:
+    return 'postgresql+pg8000://{user}:{password}@{host}:{port}/{database}'.format(user=pg_user,
+                                                                                   password=pg_pass,
+                                                                                   host=pg_host,
+                                                                                   port=pg_port,
+                                                                                   database=database or pg_database)

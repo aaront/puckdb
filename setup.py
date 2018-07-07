@@ -31,7 +31,7 @@ setup(
         'click-datetime',
         'python-dateutil',
         'pytz',
-        'psycopg2',
+        'pg8000',
         'sqlalchemy',
         'ujson',
         'python-dotenv',
