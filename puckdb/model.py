@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from typing import Type
+from typing import Type, Optional
 
 from dataclasses import dataclass
 
@@ -78,10 +78,10 @@ class Game():
     away: int
     home: int
     date_start: datetime
-    date_end: datetime or None
-    first_star: int or None
-    second_star: int or None
-    third_star: int or None
+    date_end: Optional[datetime]
+    first_star: Optional[int]
+    second_star: Optional[int]
+    third_star: Optional[int]
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):
