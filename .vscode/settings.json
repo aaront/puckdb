@@ -12,5 +12,6 @@
         "**/.mypy_cache": true,
         "**/.idea": true
     },
-    "python.linting.flake8Enabled": true
+    "python.linting.flake8Enabled": true,
+    "python.pythonPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe"
 }

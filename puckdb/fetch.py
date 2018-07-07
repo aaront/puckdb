@@ -4,8 +4,9 @@ from typing import List
 
 import aiohttp
 from asyncpg.pool import Pool
+from dataclasses import asdict
 
-from . import db, parsers
+from . import db, parsers, model
 from .extern import nhl
 
 
@@ -35,8 +36,8 @@ async def _save_game(game: dict, pool: Pool = None):
             game_version = -1
         game_obj = parsers.game(game_id, game_version, game)
         for _, player in game_data['players'].items():
-            await conn.fetchrow(db.upsert(db.player_tbl, parsers.player(player), True))
-        await conn.fetchrow(db.upsert(db.game_tbl, game_obj, True))
+            await conn.fetchrow(db.upsert(db.player_tbl, asdict(parsers.player(player)), True))
+        await conn.fetchrow(db.upsert(db.game_tbl, asdict(game_obj), True))
         for event in game['liveData']['plays']['allPlays']:
             ev = parsers.event(game_id, game_version, event)
             if ev is None:
@@ -63,10 +64,10 @@ async def get_teams(pool: Pool = None):
     pool = await _get_pool(pool)
     async with aiohttp.ClientSession() as session:
         teams = await nhl.get_teams(session)
-    team_objs = [parsers.team(team) for team in teams]
+    team_objs: List[model.Team] = [parsers.team(team) for team in teams]
     async with pool.acquire() as conn:
         for team in team_objs:
-            await conn.fetchrow(db.upsert(db.team_tbl, team))
+            await conn.fetchrow(db.upsert(db.team_tbl, asdict(team)))
     return team_objs
 
 
@@ -81,4 +82,4 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
         task = [_download_game(game_id, session=session, sem=semaphore, pool=pool) for game_id in need_download]
         results = await asyncio.gather(*task)
     results.extend(existing_games)
-    return sorted(results, key=lambda k: k['id'])
+    return sorted(results, key=lambda k: k.id)

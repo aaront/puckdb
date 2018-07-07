@@ -1,5 +1,8 @@
 import enum
+from datetime import datetime
 from typing import Type
+
+from dataclasses import dataclass
 
 
 class PlayerPosition(enum.Enum):
@@ -43,6 +46,42 @@ class ShotType(enum.Enum):
     tip = 4
     wrap_around = 5
     wrist = 6
+
+
+@dataclass
+class Team():
+    __slots__ = ['id', 'name', 'team_name', 'abbreviation', 'city']
+    id: int
+    name: str
+    team_name: str
+    abbreviation: str
+    city: str
+
+
+@dataclass
+class Player():
+    __slots__ = ['id', 'first_name', 'last_name', 'position']
+    id: int
+    first_name: str
+    last_name: str
+    position: str
+
+
+@dataclass
+class Game():
+    __slots__ = ['id', 'version', 'season', 'type', 'away', 'home', 'date_start', 'date_end', 'first_star',
+                 'second_star', 'third_star']
+    id: int
+    version: int
+    season: int
+    type: str
+    away: int
+    home: int
+    date_start: datetime
+    date_end: datetime or None
+    first_star: int or None
+    second_star: int or None
+    third_star: int or None
 
 
 def parse_enum(check_enum: Type[enum.Enum], type_str: str):
