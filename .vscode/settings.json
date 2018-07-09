@@ -13,5 +13,5 @@
         "**/.idea": true
     },
     "python.linting.flake8Enabled": true,
-    "python.pythonPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe"
+    "python.pythonPath": "C:\\Users\\aarontoth\\.virtualenvs\\puckdb-python-Q4MNre9M\\Scripts\\python.exe"
 }
