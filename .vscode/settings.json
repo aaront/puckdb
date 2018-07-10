@@ -12,6 +12,5 @@
         "**/.mypy_cache": true,
         "**/.idea": true
     },
-    "python.linting.flake8Enabled": true,
-    "python.pythonPath": "C:\\Users\\aarontoth\\.virtualenvs\\puckdb-python-Q4MNre9M\\Scripts\\python.exe"
+    "python.linting.flake8Enabled": true
 }
