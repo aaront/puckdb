@@ -1,8 +1,8 @@
-"""Added initial tables
+"""First migration
 
-Revision ID: e4618445bf4c
+Revision ID: 34cd4d697d99
 Revises: 
-Create Date: 2018-07-06 20:07:03.806459
+Create Date: 2018-07-12 22:29:00.578168
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e4618445bf4c'
+revision = '34cd4d697d99'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -37,7 +37,7 @@ def upgrade():
     sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('version', sa.BigInteger(), nullable=False),
     sa.Column('season', sa.Integer(), nullable=False),
-    sa.Column('type', sa.Enum('regular', 'playoff', name='game_type'), nullable=True),
+    sa.Column('type', sa.Enum('regular', 'playoff', 'allstar', name='game_type'), nullable=True),
     sa.Column('away', sa.SmallInteger(), nullable=False),
     sa.Column('home', sa.SmallInteger(), nullable=False),
     sa.Column('date_start', sa.DateTime(timezone=True), nullable=True),

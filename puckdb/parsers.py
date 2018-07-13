@@ -55,9 +55,10 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
         data.date_end = _parse_iso_date(game_datetime['endDateTime'])
     if 'decisions' in live_data:
         decisions = live_data['decisions']
-        data.first_star = int(decisions['firstStar']['id'])
-        data.second_star = int(decisions['secondStar']['id'])
-        data.third_star = int(decisions['thirdStar']['id'])
+        if 'firstStar' in decisions:
+            data.first_star = int(decisions['firstStar']['id'])
+            data.second_star = int(decisions['secondStar']['id'])
+            data.third_star = int(decisions['thirdStar']['id'])
     return data
 
 
@@ -66,6 +67,8 @@ def game_type(game_type: str) -> model.GameType:
         return model.GameType.regular
     elif game_type == 'P':
         return model.GameType.playoff
+    elif game_type == 'A':
+        return model.GameType.allstar
     return None
 
 

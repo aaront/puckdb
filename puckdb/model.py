@@ -22,6 +22,7 @@ class GameState(enum.Enum):
 class GameType(enum.Enum):
     regular = 0
     playoff = 1
+    allstar = 2
 
 
 class EventType(enum.Enum):
