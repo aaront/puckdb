@@ -25,9 +25,6 @@ def _setup():
 
 
 @click.command(help='Initialize the database')
-@click.option('--yes', is_flag=True, callback=abort_if_false,
-              expose_value=False,
-              prompt='Are you sure you want to init the database?')
 def init():
     loc = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     config = Config(os.path.join(loc, 'alembic.ini'))
