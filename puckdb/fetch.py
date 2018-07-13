@@ -1,12 +1,12 @@
 import asyncio
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 import aiohttp
 from asyncpg.pool import Pool
 from dataclasses import asdict
 
-from . import db, parsers, model
+from . import db, parsers, constants
 from .extern import nhl
 
 
@@ -15,6 +15,16 @@ async def _get_pool(pool: Pool = None) -> Pool:
         # already awaited
         return pool
     return await db.get_pool()
+
+
+async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None, sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[dict, None]:
+    pool = await _get_pool(pool)
+    async with sem:
+        try:
+            team_data = await nhl.get_team(team_id=team_id, session=session)
+            return await _save_team(team_data, pool=pool)
+        except AssertionError:
+            return None
 
 
 async def _download_game(game_id: int, session: aiohttp.ClientSession, pool: Pool = None, sem: asyncio.Semaphore = asyncio.Semaphore()):
@@ -46,6 +56,14 @@ async def _save_game(game: dict, pool: Pool = None):
     return game_obj
 
 
+async def _get_teams(team_ids: List[int], pool: Pool = None):
+    pool = await _get_pool(pool)
+    t = db.team_tbl
+    async with pool.acquire() as conn:
+        for row in await conn.fetch(t.select(t.c.id.in_(team_ids))):
+            yield dict(row)
+
+
 async def _get_games(game_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
     g = db.game_tbl
@@ -54,21 +72,32 @@ async def _get_games(game_ids: List[int], pool: Pool = None):
             yield dict(row)
 
 
+async def get_team(team_id: int, pool: Pool = None):
+    pool = await _get_pool(pool)
+    async with aiohttp.ClientSession() as session:
+        return await _download_team(team_id, session, pool=pool)
+
+
 async def get_game(game_id: int, pool: Pool = None):
     pool = await _get_pool(pool)
     async with aiohttp.ClientSession() as session:
         return await _download_game(game_id, session, pool=pool)
 
 
-async def get_teams(pool: Pool = None):
+async def _save_team(team: dict, pool: Pool = None):
     pool = await _get_pool(pool)
-    async with aiohttp.ClientSession() as session:
-        teams = await nhl.get_teams(session)
-    team_objs: List[model.Team] = [parsers.team(team) for team in teams]
     async with pool.acquire() as conn:
-        for team in team_objs:
-            await conn.fetchrow(db.upsert(db.team_tbl, asdict(team)))
-    return team_objs
+        await conn.fetchrow(db.upsert(db.team_tbl, asdict(parsers.team(team))))
+
+
+async def get_teams(concurrency: int = 4, pool: Pool = None):
+    pool = await _get_pool(pool)
+    semaphore = asyncio.Semaphore(concurrency)
+    async with aiohttp.ClientSession() as session:
+        all_team_ids = range(1, constants.MAX_TEAM)
+        task = [_download_team(team_id, session=session, sem=semaphore, pool=pool) for team_id in all_team_ids]
+        results = await asyncio.gather(*task)
+    return sorted([r for r in results if r is not None], key=lambda k: k.id)
 
 
 async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4, pool: Pool = None):

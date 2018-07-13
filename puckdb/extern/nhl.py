@@ -16,6 +16,11 @@ async def get_teams(session: aiohttp.ClientSession):
     return teams['teams']
 
 
+async def get_team(team_id: int, session: aiohttp.ClientSession):
+    teams = await _get(_BASE_URL + f'/teams/{team_id}', session)
+    return teams['teams'][0]
+
+
 async def get_schedule_games(from_date: datetime, to_date: datetime, session: aiohttp.ClientSession):
     url = '/schedule?startDate={from_date}&endDate={to_date}&expand=schedule&site=en_nhl&teamId='.format(
         from_date=from_date.strftime('%Y-%m-%d'),
