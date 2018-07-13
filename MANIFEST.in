@@ -1,2 +1,2 @@
-include .env README.rst LICENSE alembic.ini
-recursive-include migrations *
+include .env README.rst LICENSE puckdb/alembic.ini
+recursive-include puckdb/migrations *

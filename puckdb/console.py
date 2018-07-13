@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import os
+import os.path
 from datetime import datetime
 
 import asyncpg.exceptions
@@ -27,9 +28,9 @@ def _setup():
 @click.option('--yes', is_flag=True, callback=abort_if_false,
               expose_value=False,
               prompt='Are you sure you want to init the database?')
-@click.argument('alembic_config', type=click.Path(exists=True))
-def init(alembic_config):
-    config = Config(alembic_config)
+def init():
+    loc = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config = Config(os.path.join(loc, 'alembic.ini'))
     upgrade(config, 'head')
     loop.run_until_complete(fetch.get_teams())
 
