@@ -107,8 +107,4 @@ def drop(database: str = None):
 
 
 def get_connection_str(database: str = None) -> str:
-    return 'postgresql+pg8000://{user}:{password}@{host}:{port}/{database}'.format(user=pg_user,
-                                                                                   password=pg_pass,
-                                                                                   host=pg_host,
-                                                                                   port=pg_port,
-                                                                                   database=database or pg_database)
+    return f'postgresql+pg8000://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{database or pg_database}'

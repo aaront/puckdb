@@ -108,7 +108,7 @@ def _parse_shot_type(shot_type: str) -> model.ShotType:
     except ValueError:
         if shot == 'wrap':
             return model.ShotType.wrap_around
-    raise ValueError('\'{}\' is not parseable'.format(shot_type))
+    raise ValueError(f'\'{shot_type}\' is not parseable')
 
 
 def _parse_iso_date(date_str: str) -> datetime:

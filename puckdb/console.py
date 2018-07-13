@@ -46,10 +46,10 @@ def drop():
 def get(from_date, to_date):
     try:
         games = loop.run_until_complete(fetch.get_games(from_date=from_date, to_date=to_date))
-        click.echo('Fetched {games} games'.format(games=len(games)))
+        click.echo(f'Fetched {len(games)} games')
         if games:
-            click.echo('First: {}'.format(games[0]['id']))
-            click.echo('Most recent: {}'.format(games[-1]['id']))
+            click.echo(f'First: {games[0]['id']}')
+            click.echo(f'Most recent: {games[-1]['id']}'
     except asyncpg.exceptions.UndefinedTableError:
         click.echo('ERROR: Please run `puckdb init` to initialize this DB first.')
         sys.exit(1)

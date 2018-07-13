@@ -22,16 +22,13 @@ async def get_team(team_id: int, session: aiohttp.ClientSession):
 
 
 async def get_schedule_games(from_date: datetime, to_date: datetime, session: aiohttp.ClientSession):
-    url = '/schedule?startDate={from_date}&endDate={to_date}&expand=schedule&site=en_nhl&teamId='.format(
-        from_date=from_date.strftime('%Y-%m-%d'),
-        to_date=to_date.strftime('%Y-%m-%d')
-    )
+    url = f'/schedule?startDate={from_date.strftime("%Y-%m-%d")}&endDate={to_date.strftime("%Y-%m-%d")}&expand=schedule&site=en_nhl&teamId='
     schedule = await _get(_BASE_URL + url, session)
     return list(itertools.chain.from_iterable([day['games'] for day in schedule['dates']]))
 
 
 async def get_live_data(game_id: int, session: aiohttp.ClientSession):
-    url = '/game/{game_id}/feed/live'.format(game_id=game_id)
+    url = f'/game/{game_id}/feed/live'
     return await _get(_BASE_URL + url, session)
 
 

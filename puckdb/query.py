@@ -73,5 +73,5 @@ class GameQuery(BaseQuery):
         seasons = []
         for i in range(self.to_season - self.from_season + 1):
             season_start = self.from_season + i
-            seasons.append('{}{}'.format(season_start, season_start + 1))
+            seasons.append(f'{season_start}{season_start + 1}')
         return seasons
