@@ -70,4 +70,4 @@ class TestFetch:
     async def test_get_teams(self, database, pool):
         teams = await fetch.get_teams(pool=pool)
         assert teams is not None
-        assert len(teams) >= 30
+        assert len(teams) == 81

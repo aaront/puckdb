@@ -6,7 +6,7 @@ import aiohttp
 from asyncpg.pool import Pool
 from dataclasses import asdict
 
-from . import db, parsers, constants
+from . import constants, db, model, parsers
 from .extern import nhl
 
 
@@ -17,7 +17,8 @@ async def _get_pool(pool: Pool = None) -> Pool:
     return await db.get_pool()
 
 
-async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None, sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[dict, None]:
+async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None,
+                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[model.Team, None]:
     pool = await _get_pool(pool)
     async with sem:
         try:
@@ -84,10 +85,12 @@ async def get_game(game_id: int, pool: Pool = None):
         return await _download_game(game_id, session, pool=pool)
 
 
-async def _save_team(team: dict, pool: Pool = None):
+async def _save_team(team: dict, pool: Pool = None) -> model.Team:
     pool = await _get_pool(pool)
     async with pool.acquire() as conn:
-        await conn.fetchrow(db.upsert(db.team_tbl, asdict(parsers.team(team))))
+        team_obj = parsers.team(team)
+        await conn.fetchrow(db.upsert(db.team_tbl, asdict(team_obj)))
+    return team_obj
 
 
 async def get_teams(concurrency: int = 4, pool: Pool = None):
