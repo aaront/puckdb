@@ -1,10 +1,10 @@
 import asyncio
+from dataclasses import asdict
 from datetime import datetime
 from typing import List, Union
 
 import aiohttp
 from asyncpg.pool import Pool
-from dataclasses import asdict
 
 from . import constants, db, model, parsers
 from .extern import nhl

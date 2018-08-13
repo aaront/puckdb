@@ -2,8 +2,8 @@ import asyncio
 
 from aiohttp import web
 
-from ..db import get_pool
 from .routes import setup_routes
+from ..db import get_pool
 
 
 async def init():

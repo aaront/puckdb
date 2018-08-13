@@ -1,7 +1,7 @@
 import asyncio
-import sys
 import os
 import os.path
+import sys
 from datetime import datetime
 
 import asyncpg.exceptions
