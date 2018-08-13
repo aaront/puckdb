@@ -28,7 +28,8 @@ async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Poo
             return None
 
 
-async def _download_game(game_id: int, session: aiohttp.ClientSession, pool: Pool = None, sem: asyncio.Semaphore = asyncio.Semaphore()):
+async def _download_game(game_id: int, session: aiohttp.ClientSession, pool: Pool = None,
+                         sem: asyncio.Semaphore = asyncio.Semaphore()):
     pool = await _get_pool(pool)
     async with sem:
         game_data = await nhl.get_live_data(game_id=game_id, session=session)
