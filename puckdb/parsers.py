@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 import pytz
 
@@ -33,11 +34,11 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
     game_datetime = game_data['datetime']
     game_info = game_data['game']
     live_data = game_json['liveData']
-    for type, team in game_data['teams'].items():
-        if type == 'home':
-            home_team = team
+    for team_type, team_obj in game_data['teams'].items():
+        if team_type == 'home':
+            home_team = team_obj
         else:
-            away_team = team
+            away_team = team_obj
     data = model.Game(
         id=game_id,
         version=game_version,
@@ -62,12 +63,12 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
     return data
 
 
-def game_type(game_type: str) -> model.GameType:
-    if game_type == 'R':
+def game_type(game_type_str: str) -> Optional[model.GameType]:
+    if game_type_str == 'R':
         return model.GameType.regular
-    elif game_type == 'P':
+    elif game_type_str == 'P':
         return model.GameType.playoff
-    elif game_type == 'A':
+    elif game_type_str == 'A':
         return model.GameType.allstar
     return None
 

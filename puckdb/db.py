@@ -59,7 +59,7 @@ event_tbl = sa.Table('event', metadata,
                      sa.Column('period', sa.SmallInteger, nullable=False),
                      sa.Column('location_x', sa.Float, nullable=True),
                      sa.Column('location_y', sa.Float, nullable=True),
-                     sa.ForeignKeyConstraint(['game', 'version'], ['game.id', 'game.version'])
+                     sa.ForeignKeyConstraint(('game', 'version'), ['game.id', 'game.version'])
                      )
 
 

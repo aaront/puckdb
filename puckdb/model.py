@@ -49,7 +49,7 @@ class ShotType(enum.Enum):
 
 
 @dataclass
-class Team():
+class Team:
     __slots__ = ['id', 'name', 'team_name', 'abbreviation', 'city']
     id: int
     name: str
@@ -59,7 +59,7 @@ class Team():
 
 
 @dataclass
-class Player():
+class Player:
     __slots__ = ['id', 'first_name', 'last_name', 'position']
     id: int
     first_name: str
@@ -68,7 +68,7 @@ class Player():
 
 
 @dataclass
-class Game():
+class Game:
     __slots__ = ['id', 'version', 'season', 'type', 'away', 'home', 'date_start', 'date_end', 'first_star',
                  'second_star', 'third_star']
     id: int
