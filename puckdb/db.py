@@ -23,7 +23,17 @@ player_tbl = sa.Table('player', metadata,
                       sa.Column('id', sa.Integer, primary_key=True),
                       sa.Column('first_name', sa.String),
                       sa.Column('last_name', sa.String),
-                      sa.Column('position', sa.Enum(model.PlayerPosition, name='player_position'))
+                      sa.Column('position', sa.Enum(model.PlayerPosition, name='player_position')),
+                      sa.Column('handedness', sa.Enum(model.PlayerHandedness, name='player_handedness')),
+                      sa.Column('height', sa.String),
+                      sa.Column('weight', sa.SmallInteger),
+                      sa.Column('captain', sa.Boolean),
+                      sa.Column('alternate_captain', sa.Boolean),
+                      sa.Column('birth_city', sa.String),
+                      sa.Column('birth_country', sa.String),
+                      sa.Column('birth_date', sa.Date),
+                      sa.Column('birth_state_province', sa.String),
+                      sa.Column('nationality', sa.String)
                       )
 
 game_tbl = sa.Table('game', metadata,

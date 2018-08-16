@@ -1,6 +1,6 @@
 import enum
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Type, Optional
 
 
@@ -10,6 +10,11 @@ class PlayerPosition(enum.Enum):
     right_wing = 2
     defenseman = 3
     goalie = 4
+
+
+class PlayerHandedness(enum.Enum):
+    left = 0
+    right = 1
 
 
 class GameState(enum.Enum):
@@ -60,11 +65,22 @@ class Team:
 
 @dataclass
 class Player:
-    __slots__ = ['id', 'first_name', 'last_name', 'position']
+    __slots__ = ['id', 'first_name', 'last_name', 'position', 'handedness', 'height', 'weight', 'captain', 'alternate_captain', 'birth_city', 'birth_country',
+                 'birth_date', 'birth_state_province', 'nationality']
     id: int
     first_name: str
     last_name: str
     position: str
+    handedness: str
+    height: str
+    weight: int
+    captain: bool
+    alternate_captain: bool
+    birth_city: str
+    birth_country: str
+    birth_date: date
+    birth_state_province: str
+    nationality: str
 
 
 @dataclass

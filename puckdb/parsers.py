@@ -1,12 +1,13 @@
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 import pytz
 
 from . import model
 
-iso_date_format = '%Y-%m-%dT%H:%M:%SZ'
+iso_date_format = '%Y-%m-%d'
+iso_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 
 
 def team(team_json: dict) -> model.Team:
@@ -25,7 +26,17 @@ def player(player_json: dict) -> model.Player:
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
-        position=model.parse_enum(model.PlayerPosition, pos).name
+        position=model.parse_enum(model.PlayerPosition, pos).name,
+        handedness='left' if player_json['shootsCatches'] is 'L' else 'right',
+        height=player_json['height'],
+        weight=player_json['weight'],
+        captain=player_json.get('captain', False),
+        alternate_captain=player_json.get('alternateCaptain', False),
+        birth_city=player_json['birthCity'],
+        birth_country=player_json['birthCountry'],
+        birth_date=_parse_iso_date(player_json['birthDate']),
+        birth_state_province=player_json.get('birthStateProvince', None),
+        nationality=player_json['nationality']
     )
 
 
@@ -46,14 +57,14 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
         type=game_type(game_info['type']).name,
         away=int(away_team['id']),
         home=int(home_team['id']),
-        date_start=_parse_iso_date(game_datetime['dateTime']),
+        date_start=_parse_iso_datetime(game_datetime['dateTime']),
         date_end=None,
         first_star=None,
         second_star=None,
         third_star=None
     )
     if 'endDateTime' in game_datetime:
-        data.date_end = _parse_iso_date(game_datetime['endDateTime'])
+        data.date_end = _parse_iso_datetime(game_datetime['endDateTime'])
     if 'decisions' in live_data:
         decisions = live_data['decisions']
         if 'firstStar' in decisions:
@@ -87,7 +98,7 @@ def event(game_id: int, game_version: int, event_json: dict):
         id=about['eventId'],
         team=event_json['team']['id'],
         type=event_type.name,
-        date=_parse_iso_date(about['dateTime']),
+        date=_parse_iso_datetime(about['dateTime']),
         period=about['period']
     )
     coordinates = event_json['coordinates']
@@ -112,5 +123,9 @@ def _parse_shot_type(shot_type: str) -> model.ShotType:
     raise ValueError(f'\'{shot_type}\' is not parseable')
 
 
-def _parse_iso_date(date_str: str) -> datetime:
-    return pytz.utc.localize(datetime.strptime(date_str, iso_date_format))
+def _parse_iso_datetime(date_str: str) -> datetime:
+    return pytz.utc.localize(datetime.strptime(date_str, iso_datetime_format))
+
+
+def _parse_iso_date(date_str: str) -> date:
+    return pytz.utc.localize(datetime.strptime(date_str, iso_date_format)).date()
