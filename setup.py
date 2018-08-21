@@ -36,7 +36,8 @@ setup(
         'ujson',
         'python-dotenv',
         'dataclasses',
-        'alembic'
+        'alembic',
+        'pint'
     ],
     entry_points='''
         [console_scripts]

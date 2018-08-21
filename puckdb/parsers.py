@@ -2,12 +2,15 @@ import re
 from datetime import date, datetime
 from typing import Optional
 
+import pint
 import pytz
 
 from . import model
 
 iso_date_format = '%Y-%m-%d'
 iso_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
+height_re = re.compile(r'\d+')
+ureg = pint.UnitRegistry()
 
 
 def team(team_json: dict) -> model.Team:
@@ -22,13 +25,15 @@ def team(team_json: dict) -> model.Team:
 
 def player(player_json: dict) -> model.Player:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
+    h = height_re.findall(player_json['height'])
+    height = int(h[0]) * ureg.foot + ((int(h[1]) * ureg.inch) if len(h) > 0 else 0)
     return model.Player(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
         position=model.parse_enum(model.PlayerPosition, pos).name,
         handedness='left' if player_json['shootsCatches'] is 'L' else 'right',
-        height=player_json['height'],
+        height=height.to('cm').magnitude,
         weight=player_json['weight'],
         captain=player_json.get('captain', False),
         alternate_captain=player_json.get('alternateCaptain', False),

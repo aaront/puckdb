@@ -72,7 +72,7 @@ class Player:
     last_name: str
     position: str
     handedness: str
-    height: str
+    height: float
     weight: int
     captain: bool
     alternate_captain: bool
