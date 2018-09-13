@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Initialize",
-            "type": "pythonExperimental",
+            "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/puckdb/console.py",
             "args": [
@@ -17,7 +17,7 @@
         },
         {
             "name": "Get",
-            "type": "pythonExperimental",
+            "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/puckdb/console.py",
             "args": [
