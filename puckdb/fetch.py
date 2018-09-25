@@ -8,6 +8,7 @@ from asyncpg.pool import Pool
 
 from . import constants, db, model, parsers
 from .extern import nhl
+from .query import TeamQuery
 
 
 async def _get_pool(pool: Pool = None) -> Pool:
@@ -18,7 +19,7 @@ async def _get_pool(pool: Pool = None) -> Pool:
 
 
 async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None,
-                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[model.Team, None]:
+                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[dict, None]:
     pool = await _get_pool(pool)
     async with sem:
         try:
@@ -62,7 +63,7 @@ async def _get_teams(team_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
     t = db.team_tbl
     async with pool.acquire() as conn:
-        for row in await conn.fetch(t.select(t.c.id.in_(team_ids))):
+        for row in await TeamQuery(conn).get_all(team_ids):
             yield dict(row)
 
 
@@ -86,7 +87,7 @@ async def get_game(game_id: int, pool: Pool = None):
         return await _download_game(game_id, session, pool=pool)
 
 
-async def _save_team(team: dict, pool: Pool = None) -> model.Team:
+async def _save_team(team: dict, pool: Pool = None) -> dict:
     pool = await _get_pool(pool)
     async with pool.acquire() as conn:
         team_obj = parsers.team(team)

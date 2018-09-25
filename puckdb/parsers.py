@@ -5,16 +5,14 @@ from typing import Optional
 import pint
 import pytz
 
-from . import model
-
 iso_date_format = '%Y-%m-%d'
 iso_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 height_re = re.compile(r'\d+')
 ureg = pint.UnitRegistry()
 
 
-def team(team_json: dict) -> model.Team:
-    return model.Team(
+def team(team_json: dict) -> dict:
+    return dict(
         id=int(team_json['id']),
         name=team_json['name'],
         team_name=team_json['teamName'],
@@ -23,11 +21,11 @@ def team(team_json: dict) -> model.Team:
     )
 
 
-def player(player_json: dict) -> model.Player:
+def player(player_json: dict) -> dict:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
     h = height_re.findall(player_json['height'])
     height = int(h[0]) * ureg.foot + ((int(h[1]) * ureg.inch) if len(h) > 0 else 0)
-    return model.Player(
+    return dict(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
@@ -45,7 +43,7 @@ def player(player_json: dict) -> model.Player:
     )
 
 
-def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
+def game(game_id: int, game_version: int, game_json: dict) -> dict:
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
     game_info = game_data['game']
@@ -55,7 +53,7 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
             home_team = team_obj
         else:
             away_team = team_obj
-    data = model.Game(
+    data = dict(
         id=game_id,
         version=game_version,
         season=int(game_info['season']),
@@ -134,3 +132,4 @@ def _parse_iso_datetime(date_str: str) -> datetime:
 
 def _parse_iso_date(date_str: str) -> date:
     return pytz.utc.localize(datetime.strptime(date_str, iso_date_format)).date()
+format)).date()
