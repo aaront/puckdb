@@ -100,7 +100,7 @@ async def get_teams(concurrency: int = 4, pool: Pool = None):
         all_team_ids = range(1, constants.MAX_TEAM)
         task = [_download_team(team_id, session=session, sem=semaphore, pool=pool) for team_id in all_team_ids]
         results = await asyncio.gather(*task)
-    return sorted([r for r in results if r is not None], key=lambda k: k.id)
+    return sorted([r for r in results if r is not None], key=lambda k: k['id'])
 
 
 async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4, pool: Pool = None):
@@ -114,4 +114,4 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
         task = [_download_game(game_id, session=session, sem=semaphore, pool=pool) for game_id in need_download]
         results = await asyncio.gather(*task)
     results.extend(existing_games)
-    return sorted(results, key=lambda k: k.id)
+    return sorted(results, key=lambda k: k['id'])
