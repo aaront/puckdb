@@ -1,12 +1,11 @@
 import asyncio
-from dataclasses import asdict
 from datetime import datetime
 from typing import List, Union
 
 import aiohttp
 from asyncpg.pool import Pool
 
-from . import constants, db, model, parsers
+from . import constants, db, parsers
 from .extern import nhl
 from .query import TeamQuery
 
@@ -49,8 +48,8 @@ async def _save_game(game: dict, pool: Pool = None):
             game_version = -1
         game_obj = parsers.game(game_id, game_version, game)
         for _, player in game_data['players'].items():
-            await conn.fetchrow(db.upsert(db.player_tbl, asdict(parsers.player(player)), True))
-        await conn.fetchrow(db.upsert(db.game_tbl, asdict(game_obj), True))
+            await conn.fetchrow(db.upsert(db.player_tbl, parsers.player(player), True))
+        await conn.fetchrow(db.upsert(db.game_tbl, game_obj, True))
         for event in game['liveData']['plays']['allPlays']:
             ev = parsers.event(game_id, game_version, event)
             if ev is None:
@@ -61,7 +60,6 @@ async def _save_game(game: dict, pool: Pool = None):
 
 async def _get_teams(team_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
-    t = db.team_tbl
     async with pool.acquire() as conn:
         for row in await TeamQuery(conn).get_all(team_ids):
             yield dict(row)
@@ -91,7 +89,7 @@ async def _save_team(team: dict, pool: Pool = None) -> dict:
     pool = await _get_pool(pool)
     async with pool.acquire() as conn:
         team_obj = parsers.team(team)
-        await conn.fetchrow(db.upsert(db.team_tbl, asdict(team_obj)))
+        await conn.fetchrow(db.upsert(db.team_tbl, team_obj))
     return team_obj
 
 

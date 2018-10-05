@@ -1,9 +1,5 @@
 import enum
-import sqlalchemy as sa
-from asyncpg.pool import Pool
-from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Type, Optional, List
+from typing import Type
 
 
 class PlayerPosition(enum.Enum):
@@ -26,6 +22,7 @@ class GameState(enum.Enum):
 
 
 class GameType(enum.Enum):
+    unknown = -1
     regular = 0
     playoff = 1
     allstar = 2

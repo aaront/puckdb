@@ -1,9 +1,10 @@
 import re
 from datetime import date, datetime
-from typing import Optional
 
 import pint
 import pytz
+
+from . import model
 
 iso_date_format = '%Y-%m-%d'
 iso_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
@@ -67,24 +68,24 @@ def game(game_id: int, game_version: int, game_json: dict) -> dict:
         third_star=None
     )
     if 'endDateTime' in game_datetime:
-        data.date_end = _parse_iso_datetime(game_datetime['endDateTime'])
+        data['date_end'] = _parse_iso_datetime(game_datetime['endDateTime'])
     if 'decisions' in live_data:
         decisions = live_data['decisions']
         if 'firstStar' in decisions:
-            data.first_star = int(decisions['firstStar']['id'])
-            data.second_star = int(decisions['secondStar']['id'])
-            data.third_star = int(decisions['thirdStar']['id'])
+            data['first_star'] = int(decisions['firstStar']['id'])
+            data['second_star'] = int(decisions['secondStar']['id'])
+            data['third_star'] = int(decisions['thirdStar']['id'])
     return data
 
 
-def game_type(game_type_str: str) -> Optional[model.GameType]:
+def game_type(game_type_str: str) -> model.GameType:
     if game_type_str == 'R':
         return model.GameType.regular
     elif game_type_str == 'P':
         return model.GameType.playoff
     elif game_type_str == 'A':
         return model.GameType.allstar
-    return None
+    return model.GameType.unknown
 
 
 def event(game_id: int, game_version: int, event_json: dict):
@@ -117,9 +118,10 @@ shot_sep = re.compile(r'(\w+)[\s|-]*')
 
 
 def _parse_shot_type(shot_type: str) -> model.ShotType:
-    shot = shot_sep.match(shot_type).group(1).lower()
+    shot = shot_sep.match(shot_type)
+    clean_shot = shot.group(1).lower() if shot else None
     try:
-        return model.parse_enum(model.ShotType, shot)
+        return model.parse_enum(model.ShotType, clean_shot)
     except ValueError:
         if shot == 'wrap':
             return model.ShotType.wrap_around
@@ -132,4 +134,3 @@ def _parse_iso_datetime(date_str: str) -> datetime:
 
 def _parse_iso_date(date_str: str) -> date:
     return pytz.utc.localize(datetime.strptime(date_str, iso_date_format)).date()
-format)).date()
