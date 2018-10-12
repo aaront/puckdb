@@ -15,8 +15,8 @@ class IdQuery:
 
     async def get_all(self, ids: Optional[List[int]]):
         if ids:
-            return self.conn.fetch(self.tbl.select(self.tbl.c.id.in_(ids)))
-        return self.conn.fetch(self.tbl.select())
+            return await self.conn.fetch(self.tbl.select(self.tbl.c.id.in_(ids)))
+        return await self.conn.fetch(self.tbl.select())
 
 
 class TeamQuery(IdQuery):
