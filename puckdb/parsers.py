@@ -120,12 +120,9 @@ shot_sep = re.compile(r'(\w+)[\s|-]*')
 def _parse_shot_type(shot_type: str) -> model.ShotType:
     shot = shot_sep.match(shot_type)
     clean_shot = shot.group(1).lower() if shot else None
-    try:
-        return model.parse_enum(model.ShotType, clean_shot)
-    except ValueError:
-        if shot == 'wrap':
-            return model.ShotType.wrap_around
-    raise ValueError(f'\'{shot_type}\' is not parseable')
+    if clean_shot == 'wrap':
+        return model.ShotType.wrap_around
+    return model.parse_enum(model.ShotType, clean_shot)
 
 
 def _parse_iso_datetime(date_str: str) -> datetime:
