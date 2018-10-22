@@ -7,7 +7,7 @@ from asyncpg.pool import Pool
 
 from . import constants, db, parsers
 from .extern import nhl
-from .query import TeamQuery
+from .query import EventQuery, GameQuery, PlayerQuery, TeamQuery
 
 
 async def _get_pool(pool: Pool = None) -> Pool:
@@ -47,14 +47,16 @@ async def _save_game(game: dict, pool: Pool = None):
         else:
             game_version = -1
         game_obj = parsers.game(game_id, game_version, game)
+        player_query = PlayerQuery(conn)
         for _, player in game_data['players'].items():
-            await conn.fetchrow(db.upsert(db.player_tbl, parsers.player(player), True))
-        await conn.fetchrow(db.upsert(db.game_tbl, game_obj, True))
+            await player_query.insert(parsers.player(player))
+        await GameQuery(conn).insert(game_obj)
+        event_query = EventQuery(conn)
         for event in game['liveData']['plays']['allPlays']:
             ev = parsers.event(game_id, game_version, event)
             if ev is None:
                 continue
-            await conn.fetchrow(db.upsert(db.event_tbl, ev))
+            await event_query.insert(ev)
     return game_obj
 
 
@@ -69,7 +71,7 @@ async def _get_games(game_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
     g = db.game_tbl
     async with pool.acquire() as conn:
-        for row in await conn.fetch(g.select(g.c.id.in_(game_ids))):
+        for row in await GameQuery(conn).get_all(game_ids):
             yield dict(row)
 
 
@@ -89,7 +91,7 @@ async def _save_team(team: dict, pool: Pool = None) -> dict:
     pool = await _get_pool(pool)
     async with pool.acquire() as conn:
         team_obj = parsers.team(team)
-        await conn.fetchrow(db.upsert(db.team_tbl, team_obj))
+        await TeamQuery(conn).insert(team_obj)
     return team_obj
 
 
