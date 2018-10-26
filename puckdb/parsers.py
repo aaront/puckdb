@@ -1,6 +1,5 @@
 import re
 from datetime import date, datetime
-from typing import Optional
 
 import pint
 import pytz
@@ -13,8 +12,8 @@ height_re = re.compile(r'\d+')
 ureg = pint.UnitRegistry()
 
 
-def team(team_json: dict) -> model.Team:
-    return model.Team(
+def team(team_json: dict) -> dict:
+    return dict(
         id=int(team_json['id']),
         name=team_json['name'],
         team_name=team_json['teamName'],
@@ -23,11 +22,11 @@ def team(team_json: dict) -> model.Team:
     )
 
 
-def player(player_json: dict) -> model.Player:
+def player(player_json: dict) -> dict:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
     h = height_re.findall(player_json['height'])
     height = int(h[0]) * ureg.foot + ((int(h[1]) * ureg.inch) if len(h) > 0 else 0)
-    return model.Player(
+    return dict(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
@@ -45,7 +44,7 @@ def player(player_json: dict) -> model.Player:
     )
 
 
-def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
+def game(game_id: int, game_version: int, game_json: dict) -> dict:
     game_data = game_json['gameData']
     game_datetime = game_data['datetime']
     game_info = game_data['game']
@@ -55,7 +54,7 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
             home_team = team_obj
         else:
             away_team = team_obj
-    data = model.Game(
+    data = dict(
         id=game_id,
         version=game_version,
         season=int(game_info['season']),
@@ -69,24 +68,24 @@ def game(game_id: int, game_version: int, game_json: dict) -> model.Game:
         third_star=None
     )
     if 'endDateTime' in game_datetime:
-        data.date_end = _parse_iso_datetime(game_datetime['endDateTime'])
+        data['date_end'] = _parse_iso_datetime(game_datetime['endDateTime'])
     if 'decisions' in live_data:
         decisions = live_data['decisions']
         if 'firstStar' in decisions:
-            data.first_star = int(decisions['firstStar']['id'])
-            data.second_star = int(decisions['secondStar']['id'])
-            data.third_star = int(decisions['thirdStar']['id'])
+            data['first_star'] = int(decisions['firstStar']['id'])
+            data['second_star'] = int(decisions['secondStar']['id'])
+            data['third_star'] = int(decisions['thirdStar']['id'])
     return data
 
 
-def game_type(game_type_str: str) -> Optional[model.GameType]:
+def game_type(game_type_str: str) -> model.GameType:
     if game_type_str == 'R':
         return model.GameType.regular
     elif game_type_str == 'P':
         return model.GameType.playoff
     elif game_type_str == 'A':
         return model.GameType.allstar
-    return None
+    return model.GameType.unknown
 
 
 def event(game_id: int, game_version: int, event_json: dict):
@@ -119,13 +118,11 @@ shot_sep = re.compile(r'(\w+)[\s|-]*')
 
 
 def _parse_shot_type(shot_type: str) -> model.ShotType:
-    shot = shot_sep.match(shot_type).group(1).lower()
-    try:
-        return model.parse_enum(model.ShotType, shot)
-    except ValueError:
-        if shot == 'wrap':
-            return model.ShotType.wrap_around
-    raise ValueError(f'\'{shot_type}\' is not parseable')
+    shot = shot_sep.match(shot_type)
+    clean_shot = shot.group(1).lower() if shot else None
+    if clean_shot == 'wrap':
+        return model.ShotType.wrap_around
+    return model.parse_enum(model.ShotType, clean_shot)
 
 
 def _parse_iso_datetime(date_str: str) -> datetime:

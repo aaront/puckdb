@@ -1,13 +1,13 @@
 import asyncio
-from dataclasses import asdict
 from datetime import datetime
 from typing import List, Union
 
 import aiohttp
 from asyncpg.pool import Pool
 
-from . import constants, db, model, parsers
+from . import constants, db, parsers
 from .extern import nhl
+from .query import EventQuery, GameQuery, PlayerQuery, TeamQuery
 
 
 async def _get_pool(pool: Pool = None) -> Pool:
@@ -18,7 +18,7 @@ async def _get_pool(pool: Pool = None) -> Pool:
 
 
 async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None,
-                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[model.Team, None]:
+                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[dict, None]:
     pool = await _get_pool(pool)
     async with sem:
         try:
@@ -47,22 +47,23 @@ async def _save_game(game: dict, pool: Pool = None):
         else:
             game_version = -1
         game_obj = parsers.game(game_id, game_version, game)
+        player_query = PlayerQuery(conn)
         for _, player in game_data['players'].items():
-            await conn.fetchrow(db.upsert(db.player_tbl, asdict(parsers.player(player)), True))
-        await conn.fetchrow(db.upsert(db.game_tbl, asdict(game_obj), True))
+            await player_query.insert(parsers.player(player))
+        await GameQuery(conn).insert(game_obj)
+        event_query = EventQuery(conn)
         for event in game['liveData']['plays']['allPlays']:
             ev = parsers.event(game_id, game_version, event)
             if ev is None:
                 continue
-            await conn.fetchrow(db.upsert(db.event_tbl, ev))
+            await event_query.insert(ev)
     return game_obj
 
 
 async def _get_teams(team_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
-    t = db.team_tbl
     async with pool.acquire() as conn:
-        for row in await conn.fetch(t.select(t.c.id.in_(team_ids))):
+        for row in await TeamQuery(conn).get_all(team_ids):
             yield dict(row)
 
 
@@ -70,7 +71,7 @@ async def _get_games(game_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
     g = db.game_tbl
     async with pool.acquire() as conn:
-        for row in await conn.fetch(g.select(g.c.id.in_(game_ids))):
+        for row in await GameQuery(conn).get_all(game_ids):
             yield dict(row)
 
 
@@ -86,11 +87,11 @@ async def get_game(game_id: int, pool: Pool = None):
         return await _download_game(game_id, session, pool=pool)
 
 
-async def _save_team(team: dict, pool: Pool = None) -> model.Team:
+async def _save_team(team: dict, pool: Pool = None) -> dict:
     pool = await _get_pool(pool)
     async with pool.acquire() as conn:
         team_obj = parsers.team(team)
-        await conn.fetchrow(db.upsert(db.team_tbl, asdict(team_obj)))
+        await TeamQuery(conn).insert(team_obj)
     return team_obj
 
 
@@ -101,7 +102,7 @@ async def get_teams(concurrency: int = 4, pool: Pool = None):
         all_team_ids = range(1, constants.MAX_TEAM)
         task = [_download_team(team_id, session=session, sem=semaphore, pool=pool) for team_id in all_team_ids]
         results = await asyncio.gather(*task)
-    return sorted([r for r in results if r is not None], key=lambda k: k.id)
+    return sorted([r for r in results if r is not None], key=lambda k: k['id'])
 
 
 async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4, pool: Pool = None):
@@ -115,4 +116,4 @@ async def get_games(from_date: datetime, to_date: datetime, concurrency: int = 4
         task = [_download_game(game_id, session=session, sem=semaphore, pool=pool) for game_id in need_download]
         results = await asyncio.gather(*task)
     results.extend(existing_games)
-    return sorted(results, key=lambda k: k.id)
+    return sorted(results, key=lambda k: k['id'])
