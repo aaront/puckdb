@@ -5,9 +5,11 @@ from typing import List, Union
 import aiohttp
 from asyncpg.pool import Pool
 
-from . import constants, db, parsers
+from . import db, parsers
 from .extern import nhl
 from .query import EventQuery, GameQuery, PlayerQuery, TeamQuery
+
+MAX_TEAM_ID = 101
 
 
 async def _get_pool(pool: Pool = None) -> Pool:
@@ -69,7 +71,6 @@ async def _get_teams(team_ids: List[int], pool: Pool = None):
 
 async def _get_games(game_ids: List[int], pool: Pool = None):
     pool = await _get_pool(pool)
-    g = db.game_tbl
     async with pool.acquire() as conn:
         for row in await GameQuery(conn).get_all(game_ids):
             yield dict(row)
@@ -99,7 +100,7 @@ async def get_teams(concurrency: int = 4, pool: Pool = None):
     pool = await _get_pool(pool)
     semaphore = asyncio.Semaphore(concurrency)
     async with aiohttp.ClientSession() as session:
-        all_team_ids = range(1, constants.MAX_TEAM)
+        all_team_ids = range(1, MAX_TEAM_ID)
         task = [_download_team(team_id, session=session, sem=semaphore, pool=pool) for team_id in all_team_ids]
         results = await asyncio.gather(*task)
     return sorted([r for r in results if r is not None], key=lambda k: k['id'])
