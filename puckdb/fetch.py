@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from typing import List, Union
+from typing import List, Optional
 
 import aiohttp
 from asyncpg.pool import Pool
@@ -20,7 +20,7 @@ async def _get_pool(pool: Pool = None) -> Pool:
 
 
 async def _download_team(team_id: int, session: aiohttp.ClientSession, pool: Pool = None,
-                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Union[dict, None]:
+                         sem: asyncio.Semaphore = asyncio.Semaphore()) -> Optional[dict]:
     pool = await _get_pool(pool)
     async with sem:
         try:
