@@ -12,8 +12,8 @@ class IdQuery:
         self.conn = conn
         self.tbl = tbl
 
-    async def get(self, id: int):
-        return await self.conn.fetchrow(self.tbl.select().where(self.tbl.c.id == id))
+    async def get(self, entity_id: int):
+        return await self.conn.fetchrow(self.tbl.select().where(self.tbl.c.id == entity_id))
 
     async def get_all(self, ids: Optional[List[int]]):
         if ids:
