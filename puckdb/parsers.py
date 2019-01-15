@@ -26,21 +26,30 @@ def player(player_json: dict) -> dict:
     pos = player_json['primaryPosition']['name'].replace(' ', '_').lower()
     h = height_re.findall(player_json['height'])
     height = int(h[0]) * ureg.foot + ((int(h[1]) * ureg.inch) if len(h) > 0 else 0)
+
+    def get_handedness():
+        shoots_catches = player_json.get('shootsCatches', None)
+        if shoots_catches == 'L':
+            return 'left'
+        if shoots_catches == 'R':
+            return 'right'
+        return shoots_catches
+
     return dict(
         id=int(player_json['id']),
         first_name=player_json['firstName'],
         last_name=player_json['lastName'],
         position=model.parse_enum(model.PlayerPosition, pos).name,
-        handedness='left' if player_json['shootsCatches'] is 'L' else 'right',
+        handedness=get_handedness(),
         height=height.to('cm').magnitude,
         weight=player_json['weight'],
         captain=player_json.get('captain', False),
         alternate_captain=player_json.get('alternateCaptain', False),
-        birth_city=player_json['birthCity'],
-        birth_country=player_json['birthCountry'],
+        birth_city=player_json.get('birthCity', None),
+        birth_country=player_json.get('birthCountry', None),
         birth_date=_parse_iso_date(player_json['birthDate']),
         birth_state_province=player_json.get('birthStateProvince', None),
-        nationality=player_json['nationality']
+        nationality=player_json.get('nationality', None)
     )
 
 

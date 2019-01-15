@@ -29,6 +29,11 @@ def init():
     loc = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     config = Config(os.path.join(loc, 'alembic.ini'))
     upgrade(config, 'head')
+    teams()
+
+
+@click.command(help='Get all teams')
+def teams():
     loop.run_until_complete(fetch.get_teams())
 
 
@@ -71,6 +76,7 @@ def main():
 
 main.add_command(get)
 main.add_command(init)
+main.add_command(teams)
 main.add_command(drop)
 main.add_command(serve)
 
