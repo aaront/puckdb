@@ -1,10 +1,10 @@
 mypy==0.650
-pytest==4.1.0
+pytest==4.1.1
 pytest-cov==2.6.1
 pytest-asyncio==0.10.0
 pytest-monkeytype==1.0.1
 jedi==0.13.2
 coverage==4.5.2
 flake8==3.6.0
-typed-ast==1.1.1
+typed-ast==1.2.0
 rope==0.11.0
