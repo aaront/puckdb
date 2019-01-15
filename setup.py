@@ -26,7 +26,6 @@ setup(
         'cchardet',
         'aiohttp',
         'aiodns',
-        'dotenv',
         'asyncpg',
         'asyncpgsa',
         'click',
