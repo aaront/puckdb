@@ -1,6 +1,6 @@
 mypy==0.670
 pytest==4.3.0
-pytest-cov==2.6.1
+pytest-cov==2.8.1
 pytest-asyncio==0.10.0
 pytest-monkeytype==1.0.1
 jedi==0.13.2
